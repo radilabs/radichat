@@ -63,8 +63,8 @@ Phase contract: **`PHASES.md` → Phase 0 — Factory Bootstrap**
 
 ### Task 0.3 — Verify bootstrap
 
-- [ ] Inspect final repository tree.
-- [ ] Verify no product implementation exists.
+- [x] Inspect final repository tree.
+- [x] Verify no product implementation exists.
 - [ ] Obtain independent Watcher PASS.
 - [ ] Present to owner for acceptance.
 
@@ -90,7 +90,7 @@ Factory skeleton copied and RadiChat contracts written.
 
 ## Tests and Evidence
 
-Pending final repository-tree verification and Watcher.
+Repository tree verified at `b354ccf2ed65b55390822ff544f3bde163db518a`: Factory files are present, the connector probe is gone, no Go source or Phase 1 task file exists. Watcher remains pending.
 
 ## Files Changed
 
@@ -123,7 +123,7 @@ Bootstrap files under repository root plus `tasks/`, `docs/`, `decisions/`, and 
 
 ## Handoff Status
 
-**NOT READY**
+**NOT READY — WATCHER PENDING**
 
 Then STOP.
 
