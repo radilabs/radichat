@@ -8,7 +8,7 @@ Only the currently authorized phase has a detailed task file that may be execute
 
 - **Current stage:** Stage 0 — Bootstrap
 - **Current phase:** Phase 0 — Factory Bootstrap
-- **Status:** in progress
+- **Status:** verifying
 
 ## Task File Map
 
