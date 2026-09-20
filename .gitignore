@@ -1,0 +1,21 @@
+# Factory runtime artifacts
+reports/*
+!reports/README.md
+
+# Go build/test artifacts
+radichat
+*.test
+coverage.out
+
+# Local configuration and secrets
+.env
+.env.*
+config.local.*
+*.local.yaml
+*.local.yml
+*.local.toml
+
+# Editor / OS noise
+.idea/
+.vscode/
+.DS_Store
