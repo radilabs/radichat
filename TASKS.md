@@ -8,7 +8,7 @@ Only the currently authorized phase has a detailed task file that may be execute
 
 - **Current stage:** Stage 0 — Bootstrap
 - **Current phase:** Phase 0 — Factory Bootstrap
-- **Status:** verifying
+- **Status:** accepted
 
 ## Task File Map
 
@@ -22,9 +22,9 @@ No Phase 1 or later task file is authorized yet.
 
 ## History
 
-Last completed stage: **none yet**.
+Last completed stage: **Stage 0 — Bootstrap**.
 
-Last completed phase: **none yet**.
+Last completed phase: **Phase 0 — Factory Bootstrap**.
 
 ## Authority
 

@@ -6,7 +6,7 @@ The initial target is local models: one Linux binary, one config file, streaming
 
 ## Status
 
-Factory bootstrap. No product implementation has started.
+Factory bootstrap (Phase 0) accepted after independent Watcher verification. No product implementation has started; Phase 1 awaits explicit authorization.
 
 ## Roadmap
 

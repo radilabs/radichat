@@ -1,8 +1,8 @@
 # Task Execution
 
-Current phase: **[none yet — authorize a phase before making `tasks/phase-0.md` executable]**
+Current phase: **Phase 0 — Factory Bootstrap (accepted)**
 
-`tasks/phase-0.md` is included in the skeleton as a template. It is **not authorized work** until the project owners explicitly authorize Phase 0 and the Driver fills it from the immutable Phase 0 contract in `PHASES.md`.
+`tasks/phase-0.md` is the authorized task file, populated from the immutable Phase 0 contract in `PHASES.md`. Phase 0 passed independent verification and is accepted. No later phase is authorized.
 
 ## Operating Rules
 
@@ -28,4 +28,4 @@ Current phase: **[none yet — authorize a phase before making `tasks/phase-0.md
 
 ## Current Execution
 
-[No phase is authorized yet.]
+Phase 0 is accepted following independent Watcher PASS (attempt 02) and the owner’s explicit conditional acceptance. See `docs/handoffs/phase-0.md`. Execution is stopped; Phase 1 requires separate authorization.
