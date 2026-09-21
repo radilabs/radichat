@@ -103,7 +103,7 @@ Bootstrap files under repository root plus `tasks/`, `docs/`, `decisions/`, and 
 - Dr Watson report(s): none
 - Watcher attempt(s): `reports/stage-0-phase-0-watcher-01.md` — FAIL; findings under evidence-based recheck.
 - Latest Watcher result: **PASS — attempt 02**, `reports/stage-0-phase-0-watcher-02.md`. All five acceptance criteria and handoff readiness independently verified; unsupported attempt 01 findings retracted.
-- Transport: CAO server at `127.0.0.1:9889` refused connection outside the sandbox. Used the permitted direct Droid CLI fallback with model `custom:Step-3.7-Flash-0`, `--auto low`, and only verification/report-writing authority. Local Droid session file identifies session `0ddf7f24-a6dc-4626-80de-5970cfe12d8d`; the worker self-reported a different ID, so the local session record is authoritative. Attempt 1 exited with code 0 but returned FAIL; process completion did not satisfy the gate.
+- Transport: the local CAO service refused connection outside the sandbox. Used the permitted direct Droid CLI fallback with model `custom:Step-3.7-Flash-0`, `--auto low`, and only verification/report-writing authority. The local session record resolved a worker-reported identifier mismatch. Attempt 1 exited with code 0 but returned FAIL; process completion did not satisfy the gate.
 - Owner confirmed Phase 0 is verifying and assigned Planner / Driver roles. Instruction to mark Phase 0 complete "if all well" is conditional acceptance effective only upon independent Watcher PASS.
 
 ## Known Limitations

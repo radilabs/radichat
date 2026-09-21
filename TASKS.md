@@ -6,8 +6,8 @@ Only the currently authorized phase has a detailed task file that may be execute
 
 ## Current Execution
 
-- **Current stage:** Stage 0 — Bootstrap
-- **Current phase:** Phase 0 — Factory Bootstrap
+- **Current stage:** Stage 1 — Minimal Chat Client
+- **Current phase:** Phase 1 — Local Chat Core
 - **Status:** accepted
 
 ## Task File Map
@@ -15,16 +15,21 @@ Only the currently authorized phase has a detailed task file that may be execute
 ```text
 tasks/
 ├── README.md
-└── phase-0.md
+├── phase-0.md
+└── phase-1.md  (accepted)
 ```
 
-No Phase 1 or later task file is authorized yet.
+No phase is currently authorized for execution. Phase 1 is accepted; Phase 2 remains unauthorized.
+
+## Authorization
+
+Owner explicitly accepted Phase 1 on 2026-09-21 after final independent Watcher PASS. Phase 2 remains unauthorized.
 
 ## History
 
 Last completed stage: **Stage 0 — Bootstrap**.
 
-Last completed phase: **Phase 0 — Factory Bootstrap**.
+Last completed phase: **Phase 1 — Local Chat Core**.
 
 ## Authority
 

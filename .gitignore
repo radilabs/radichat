@@ -19,3 +19,17 @@ config.local.*
 .idea/
 .vscode/
 .DS_Store
+
+# Phase 1 live config, build/cache output, and local worker runtime
+/radichat.json
+/bin/
+/dist/
+/.cache/
+/.cao/
+/.factory/
+/.cursor/
+/.pool/
+/.poolside/
+/.codex/
+*.prof
+coverage*.out

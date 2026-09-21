@@ -1,8 +1,8 @@
 # Task Execution
 
-Current phase: **Phase 0 — Factory Bootstrap (accepted)**
+Current phase: **Phase 1 — Local Chat Core (accepted)**
 
-`tasks/phase-0.md` is the authorized task file, populated from the immutable Phase 0 contract in `PHASES.md`. Phase 0 passed independent verification and is accepted. No later phase is authorized.
+`tasks/phase-1.md` records the accepted checkpoint. Phase 0 remains accepted; Phase 2 is not authorized. No phase is currently authorized for execution.
 
 ## Operating Rules
 
@@ -28,4 +28,4 @@ Current phase: **Phase 0 — Factory Bootstrap (accepted)**
 
 ## Current Execution
 
-Phase 0 is accepted following independent Watcher PASS (attempt 02) and the owner’s explicit conditional acceptance. See `docs/handoffs/phase-0.md`. Execution is stopped; Phase 1 requires separate authorization.
+Owner accepted Phase 1 on 2026-09-21 after independent Watcher PASS. Stop at the accepted checkpoint. Do not create or begin Phase 2 without explicit authorization.
