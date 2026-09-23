@@ -27,11 +27,11 @@ Phase 1 implementation, Phase 2 authentication, and later optional persistence/d
 
 ## Tests / Evidence
 
-Independent Droid Watcher using `custom:Step-3.7-Flash-0`: attempt 02 PASS for AC1–AC5, handoff readiness, and scope/exclusions. Direct filesystem and Git checks established that required files exist and no implementation or future-phase task file exists. `git diff --check` passed. No software build/tests apply at bootstrap.
+Independent Watcher attempt 02 passed AC1–AC5, handoff readiness, and scope/exclusions. Direct filesystem and Git checks established that required files exist and no implementation or future-phase task file exists. `git diff --check` passed. No software build/tests apply at bootstrap.
 
 ## Owner Validation
 
-Owner confirmed Phase 0 was verifying, assigned Planner / Driver roles, requested Droid with StepFun 3.7 as Watcher, and explicitly instructed completion if all was well. Independent PASS fulfilled that condition; Planner / Driver recorded acceptance. No product runtime validation is claimed.
+Owner confirmed Phase 0 was verifying and explicitly instructed completion if all was well. Independent PASS fulfilled that condition and acceptance was recorded. No product runtime validation is claimed.
 
 ## Known Limitations
 
@@ -39,4 +39,4 @@ No RadiChat executable exists by design. Configuration syntax remains a Phase 1 
 
 ## Notes for Next Phase
 
-Stop until Phase 1 is explicitly authorized; only then create its task file. Preserve the unauthenticated Phase 1 and authentication-only Phase 2 boundaries. CAO was unavailable during verification, so the permitted direct CLI fallback was used. Transport evidence remains in the Phase 0 task file; raw reports remain ignored.
+Stop until Phase 1 is explicitly authorized; only then create its task file. Preserve the unauthenticated Phase 1 and authentication-only Phase 2 boundaries. Raw verification reports remain ignored.

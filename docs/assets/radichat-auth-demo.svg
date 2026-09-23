@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="240" viewBox="0 0 960 240" role="img" aria-labelledby="title desc">
+  <title id="title">RadiChat authenticated terminal session</title>
+  <desc id="desc">A sanitized terminal session using an authenticated endpoint without displaying a credential.</desc>
+  <rect width="960" height="240" rx="12" fill="#0d1117"/>
+  <rect width="960" height="44" rx="12" fill="#161b22"/>
+  <rect y="32" width="960" height="12" fill="#161b22"/>
+  <circle cx="24" cy="22" r="6" fill="#ff5f56"/>
+  <circle cx="44" cy="22" r="6" fill="#ffbd2e"/>
+  <circle cx="64" cy="22" r="6" fill="#27c93f"/>
+  <text x="480" y="27" text-anchor="middle" fill="#8b949e" font-family="DejaVu Sans Mono, monospace" font-size="14">RadiChat — authenticated endpoint</text>
+  <g font-family="DejaVu Sans Mono, monospace" font-size="18">
+    <text x="28" y="82" fill="#7ee787">$</text>
+    <text x="50" y="82" fill="#f0f6fc">./radichat -config radichat.local.json</text>
+    <text x="28" y="124" fill="#79c0ff">&gt;</text>
+    <text x="50" y="124" fill="#f0f6fc">Confirm this connection in five words.</text>
+    <text x="50" y="156" fill="#c9d1d9">Authenticated connection is working correctly.</text>
+    <text x="28" y="198" fill="#79c0ff">&gt;</text>
+    <text x="50" y="198" fill="#f0f6fc">/quit</text>
+    <text x="28" y="224" fill="#8b949e" font-size="14">Credential supplied through an exported environment variable; value not shown.</text>
+  </g>
+</svg>

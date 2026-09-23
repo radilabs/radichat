@@ -1,0 +1,8 @@
+{
+  "endpoint": "https://api.example.invalid/v1/chat/completions",
+  "model": "remote-model",
+  "context_budget": 8192,
+  "generation_reserve": 1024,
+  "system_prompt": "You are a concise assistant.",
+  "bearer_token_env": "RADICHAT_BEARER_TOKEN"
+}

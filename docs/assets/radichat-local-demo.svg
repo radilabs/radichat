@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="430" viewBox="0 0 960 430" role="img" aria-labelledby="title desc">
+  <title id="title">RadiChat local terminal session</title>
+  <desc id="desc">A sanitized terminal session showing normal chat, multi-turn context, and the clear command.</desc>
+  <rect width="960" height="430" rx="12" fill="#0d1117"/>
+  <rect width="960" height="44" rx="12" fill="#161b22"/>
+  <rect y="32" width="960" height="12" fill="#161b22"/>
+  <circle cx="24" cy="22" r="6" fill="#ff5f56"/>
+  <circle cx="44" cy="22" r="6" fill="#ffbd2e"/>
+  <circle cx="64" cy="22" r="6" fill="#27c93f"/>
+  <text x="480" y="27" text-anchor="middle" fill="#8b949e" font-family="DejaVu Sans Mono, monospace" font-size="14">RadiChat — local model</text>
+  <g font-family="DejaVu Sans Mono, monospace" font-size="18">
+    <text x="28" y="82" fill="#7ee787">$</text>
+    <text x="50" y="82" fill="#f0f6fc">./radichat -config radichat.local.json</text>
+    <text x="28" y="124" fill="#79c0ff">&gt;</text>
+    <text x="50" y="124" fill="#f0f6fc">What is 2 + 2?</text>
+    <text x="50" y="156" fill="#c9d1d9">2 + 2 is 4.</text>
+    <text x="28" y="198" fill="#79c0ff">&gt;</text>
+    <text x="50" y="198" fill="#f0f6fc">Add 3 to that.</text>
+    <text x="50" y="230" fill="#c9d1d9">That makes 7.</text>
+    <text x="28" y="272" fill="#79c0ff">&gt;</text>
+    <text x="50" y="272" fill="#f0f6fc">/clear</text>
+    <text x="50" y="304" fill="#8b949e">conversation cleared</text>
+    <text x="28" y="346" fill="#79c0ff">&gt;</text>
+    <text x="50" y="346" fill="#f0f6fc">What were we discussing?</text>
+    <text x="50" y="378" fill="#c9d1d9">I don't have earlier conversation context.</text>
+    <text x="28" y="410" fill="#79c0ff">&gt;</text>
+    <text x="50" y="410" fill="#f0f6fc">/quit</text>
+  </g>
+</svg>

@@ -1,24 +1,11 @@
 # Documentation
 
-`docs/` stores durable technical knowledge that future phases and future agents need.
+This directory contains RadiChat's durable user and protocol documentation.
 
-Write to `docs/` when forgetting something could cause a future agent to make the wrong implementation choice.
+- [Configuration](configuration.md) — JSON fields, endpoint rules, optional authentication, and validation failures.
+- [Protocol subset](protocol.md) — request/stream format, transport behavior, limits, and incompatible endpoints.
+- [Context accounting](context-accounting.md) — deterministic working-budget and history-trimming policy.
+- [CLI behavior](cli.md) — invocation, commands, output streams, and exit codes.
+- [Accepted handoffs](handoffs/README.md) — concise snapshots of verified phase checkpoints.
 
-Do not narrate implementation progress here. That belongs in the current phase task file.
-
-## What Belongs Here
-
-* External API behavior and constraints
-* Normalized data schemas
-* Caching and staleness rules
-* Platform permission behavior
-* Credential or configuration storage
-* Build, install, and debugging procedures
-* Design system rules and token conventions
-* Known platform limitations
-
-## What Does Not Belong Here
-
-* Task execution progress (use the current phase task file)
-* Decisions that future work must respect (use `decisions/`)
-* Temporary findings that die with the current phase
+The repository root [README](../README.md) is the public starting point for installation and first use.

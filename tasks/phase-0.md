@@ -103,7 +103,7 @@ Bootstrap files under repository root plus `tasks/`, `docs/`, `decisions/`, and 
 - Dr Watson report(s): none
 - Watcher attempt(s): `reports/stage-0-phase-0-watcher-01.md` — FAIL; findings under evidence-based recheck.
 - Latest Watcher result: **PASS — attempt 02**, `reports/stage-0-phase-0-watcher-02.md`. All five acceptance criteria and handoff readiness independently verified; unsupported attempt 01 findings retracted.
-- Transport: the local CAO service refused connection outside the sandbox. Used the permitted direct Droid CLI fallback with model `custom:Step-3.7-Flash-0`, `--auto low`, and only verification/report-writing authority. The local session record resolved a worker-reported identifier mismatch. Attempt 1 exited with code 0 but returned FAIL; process completion did not satisfy the gate.
+- Attempt 1 returned FAIL; process completion alone did not satisfy the verification gate. A bounded independent replacement returned PASS with direct repository evidence.
 - Owner confirmed Phase 0 is verifying and assigned Planner / Driver roles. Instruction to mark Phase 0 complete "if all well" is conditional acceptance effective only upon independent Watcher PASS.
 
 ## Known Limitations
@@ -135,10 +135,9 @@ Then STOP.
 
 Do not begin Phase 1 until it is explicitly authorized.
 
-## Final Verification and Transport Evidence
+## Final Verification Evidence
 
-- Attempt 01 continuation in its persisted session exited 1 without output or new report. One bounded replacement used the same Watcher role and `custom:Step-3.7-Flash-0` model.
-- Replacement Droid session: `b8c94c60-5970-49d4-b3ed-c25205716869`; explicit report result: PASS.
+- A bounded replacement retained the independent Watcher role and returned an explicit PASS.
 - Direct checks: `git ls-files`, filesystem inspection, `git status`, `git diff`, and `git diff --check`. No software build/test applies to the documentation-only bootstrap.
 - Final lifecycle files changed: `TASKS.md`, `tasks/README.md`, `tasks/phase-0.md`, `README.md`, and `docs/handoffs/phase-0.md`. Raw Watcher reports remain ignored.
 - Stage limitation: no separate Stage 0 exit conditions are enumerated. Phase 0 acceptance/handoff requirements serve as the bootstrap gate; future stage contracts should explicitly enumerate their exit conditions.

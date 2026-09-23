@@ -4,7 +4,7 @@
 
 Status: **accepted**.
 
-Owner explicitly approved Phase 1 execution and the local context-accounting choice, then accepted the verified result on 2026-09-21. Worker selection was Cursor CLI / `cursor-grok-4.6-high` coder team, Pool CLI Watcher, Droid / `custom:Step-3.7-Flash-0` reviewer, all through CAO, with Luna for CAO/environment issues. Phase 2 remains unauthorized.
+Owner explicitly approved Phase 1 execution and the local context-accounting choice, then accepted the verified result on 2026-09-21. Implementation, review, and verification used separate delegated roles. Phase 2 remained unauthorized at this checkpoint.
 
 ## Accepted Baseline and Read First
 
@@ -194,7 +194,7 @@ Depends on passing local checks and completed implementation evidence.
 
 ## Progress and Evidence
 
-Implementation and reviewer correction loop complete. The frozen corrected source passed final independent Pool verification in attempt 03. Full tests, focused regressions, vet, Linux build, library race checks, eight general black-box probes, and one fragmented-stream binary probe passed. See the execution log and runtime reports for direct evidence.
+Implementation and reviewer correction loop complete. The frozen corrected source passed final independent Watcher verification. Full tests, focused regressions, vet, Linux build, library race checks, eight general black-box probes, and one fragmented-stream binary probe passed. See the Verification Record below for durable evidence; detailed runtime reports remain ignored.
 
 ## Changed Files
 
@@ -217,7 +217,7 @@ Approved local accounting is recorded in `decisions/0001-phase-1-context-account
 
 ## Watcher / Review Status
 
-Dr Watson completed attempt 01; three findings were dispositioned in the coder correction report. Pool attempt 02 recorded FAIL because stale transport context described completed corrections as still in progress. Pool attempt 03 verified the frozen corrected hashes and returned explicit PASS for all acceptance criteria and all handoff items within Watcher authority.
+Dr Watson completed attempt 01; three findings were dispositioned in the coder correction report. A stale-context verification attempt was superseded. The final Watcher independently verified the frozen corrected hashes and returned explicit PASS for all acceptance criteria and handoff items within its authority.
 
 ## Handoff Status
 
@@ -225,67 +225,10 @@ Dr Watson completed attempt 01; three findings were dispositioned in the coder c
 
 The accepted checkpoint includes `docs/handoffs/phase-1.md`. Phase 2 remains unauthorized.
 
-## Driver Execution Log
+## Verification Record
 
-- Authorization: owner approved Phase 1 execution and accounting policy, with Cursor Grok 4.6 coders, Pool Watcher, Droid Step 3.7 reviewer, and Luna for CAO issues.
-- Preflight: known planning-only working changes; no implementation at startup. Go absent from PATH and common install locations. CLI binaries present for Cursor, Droid and Pool. Local configurations were not copied into source; secret values were not inspected.
-- CAO: the running service and default CLI used different per-user profile stores. Registered task profiles through the service API. Temporary-directory launch was rejected by service policy, so workers launched in the project directory. Initial Cursor attempts timed out at workspace trust; terminal inspection identified and resolved the prompt before bounded replacement.
-- Coder transport: session `cao-radichat-p1-coder`, terminal `efc77675`, profile `radichat_phase1_coder`, provider `cursor_cli`, model `cursor-grok-4.6-high`. Explicit implementation/evidence assignment; no commit, phase acceptance, or further delegation authority.
-- Infrastructure repair transport: session `cao-radichat-p1-transport`, terminal `9a971a5a`, profile `radichat_luna_transport`, provider `cursor_cli`, model `gpt-5.6-luna-high`. Bounded Go/CAO fixes; no product implementation authority. Droid/Pool provider support was under investigation at this point.
-
-### Implementation ready for independent review
-
-- Grok returned explicit completion for implementation/tests/docs in `reports/phase-1-coder.md`. No implementation was performed by Driver.
-- Driver inspected actual source, tests, docs, and working changes. `go test -timeout 90s -count=1 ./...` reproduced PASS across all five packages outside the sandbox; sandbox attempt failed solely because loopback bind was prohibited. `go vet ./...`, plain `go build`, and `git diff --check` passed.
-- Go 1.27.1 linux/amd64 was installed in a user-local toolchain directory; the module uses only the standard library. Coder additionally recorded library race-test PASS and built-binary local HTTP fixture evidence.
-- At this checkpoint, review and Watcher verification were pending. No live model endpoint test is claimed.
-
-### Verification transport and checkpoints
-
-- Pool Watcher launched through an isolated local CAO service using `pool_cli` and the configured Poolside model. Independent verification permissions were handled through CAO.
-- Droid reviewer attempt `cao-radichat-p1-reviewer` / `7b9c56d6` reached interactive Factory login, then initialization cleanup removed the terminal. No review is claimed. Requested Step 3.7 pin was added, but interactive mode did not execute review. Luna is correcting the adapter to use genuine custom-model exec through CAO.
-- Main CAO reload preserved Cursor processes but lost status/followup routing (`unknown`). Inspected output before bounded replacement infrastructure session: `cao-radichat-p1-transport2` / `68cb0139`, Cursor Luna. It may repair main endpoint but must not disturb the active isolated Watcher.
-- At this checkpoint, task checkboxes 1.1–1.4 reflected coder evidence and Driver inspection/local-check reproduction; they did not substitute for the independent Watcher verification recorded below.
-
-### CAO repair outcome and review launch
-
-- Luna repaired an external CAO overlay outside this repository and configured the user service to load it. Preserved Cursor status and follow-up delivery were restored and live-probed. Go 1.27.1 remains available.
-- Droid interactive mode required Factory login. CAO now owns a persistent adapter process invoking real `droid exec --auto low --model custom:Step-3.7-Flash-0 --output-format json` with private prompt files. Initial reviewer attempt `f29171c8` exposed missing processing-state signaling; no completed review was claimed. Luna corrected explicit/latest state markers and verified both a >30s delayed subprocess and a real CAO initial-message model response. Five focused adapter tests passed.
-- Droid resume is blocked by existing expired Factory authentication; fresh custom-model exec works. No credentials were invented or changed. Each review must produce its own actual report.
-- Active real reviewer: `cao-radichat-p1-reviewer3` / `193d904f`, provider `droid_cli`, explicit model `custom:Step-3.7-Flash-0`. Pool remained isolated on a separate local CAO service and was not restarted by repairs.
-- Superseded original Luna session was shut down after stale queued delivery resumed it; only replacement Luna owned subsequent fixes. The detailed temporary repair narrative remained an ignored runtime artifact outside the repository.
-
-### Reviewer probe cleanup
-
-- Step 3.7 reviewer session `193d904f` / Droid session `0f4c7037-d97b-463e-82d1-f3bd048ffb1f` ended with permission failure during cleanup, not a review outcome. It created `internal/client/idleprobe/main.go` using nonexistent `client.Config`; that probe failed compilation.
-- Driver moved only the reviewer-created directory to a temporary quarantine outside the repository, restoring the implementation tree. This was not a product correction or evidence of a coder defect. Pool was informed through its CAO inbox and inspected the restored state.
-- CAO continuation rejected the failed reviewer (409). Bounded fresh source-only replacement: `cao-radichat-p1-reviewer4` / `4281d905`, same Droid Step 3.7 model, report-only writing authority, no shell/probes/deletions. Explicit review was pending at this point and completed in the next checkpoint.
-
-### Review result and correction loop
-
-- Droid Step 3.7 source review completed in `reports/stage-1-phase-1-watson-01.md` (reviewer `4281d905`, Droid session `1552b945-fe79-4449-b489-4121d1a4830e`). It requested changes; no runtime reproduction was claimed.
-- Driver accepted the idle-watchdog finding: reset occurs only after complete SSE events, contradicting the approved progressing-stream behavior. Assigned Grok to correct underlying-read activity handling and add a fragmented-single-event regression plus true-stall coverage.
-- Reviewer finding 2 has a false premise: it claims unmarshalling JSON null into a Go string errors, and proposes allowing null. The approved design requires a string when present. Grok must reproduce current behavior and implement explicit rejection of present null/non-string values; no scope change to allow null.
-- Reviewer finding 3: preserve rejection of non-null stream errors but distinguish malformed non-object payloads from actual endpoint error objects; add focused diagnostics tests.
-- Corrections were assigned to existing Grok terminal `efc77675`; evidence was recorded in `reports/phase-1-coder-corrections.md`. Task 1.3 and affected config verification reopened during the correction loop. Pool attempt 01 was informed via inbox; the final post-correction verification is recorded below.
-
-- Pool attempt 01 returned PASS on its initial pre-review snapshot in `reports/stage-1-phase-1-watcher-01.md`: independent build/vet/full tests/race checks and eight black-box probes passed. It explicitly did not evaluate the later reviewer findings. Driver is not presenting that PASS as final readiness: the confirmed watchdog defect and correction loop require fresh verification.
-
-### Corrected implementation verification
-
-- Grok returned explicit correction completion in `reports/phase-1-coder-corrections.md`: per-read idle reset with fragmented-event and true-stall regressions; strict optional-string/null validation; distinct malformed stream-error diagnostics. Reviewer proposal to permit null was rejected against the approved contract and direct Go reproduction.
-- Corrected full tests, focused tests, `go vet ./...`, Linux build, and race checks for all four library packages passed (Go 1.27.1 linux/amd64). Driver inspected actual changed sources and `git diff --check` passed. No product edits by Driver.
-- Final independent verification was sent through CAO to the existing Pool terminal; the implementation was frozen for that result.
-
-### Final verification and owner gate
-
-- Pool attempt 02 independently observed the corrected source and passing checks but returned FAIL because a delayed CAO message made it treat already-completed corrections as still in progress. No product change resulted. The Driver corrected that stale transport premise and requested a fresh verdict against the recorded source hashes.
-- Pool attempt 03 verified every hash in `reports/phase-1-final-source.sha256`, reran formatting, vet, Linux build, the full test suite, library race checks, eight black-box probes, and a separate fragmented-stream binary probe. It returned explicit **PASS** for AC1–AC8, exclusions, and every handoff condition in Watcher authority in `reports/stage-1-phase-1-watcher-03.md`.
-- Reviewer concerns are resolved: W1 and W3 were corrected with regression coverage; W2's incorrect Go `null` premise was rejected while strict optional-string behavior was made explicit and tested. No reviewer concern remains unresolved.
-- Owner explicitly accepted Phase 1 on 2026-09-21. The accepted handoff and checkpoint were then prepared under the public-release gate. Phase 2 remains unauthorized.
-
-### Accepted checkpoint
-
-- Owner acceptance: explicit on 2026-09-21.
-- Public-release gate: source, examples, documentation, task records, ignore rules, generated artifacts, and transient reports audited before staging. No credentials or private endpoint configuration are included; tracked examples use loopback placeholders only.
-- Final staged Watcher verification and checkpoint commit evidence are recorded by the Driver at commit time. Phase 2 remains unauthorized and unimplemented.
+- The Coder Team implemented the accepted design and supplied source, test, build, and documentation evidence. The Driver independently inspected the repository and reproduced the required checks.
+- Initial review found an idle-stream watchdog defect and stream-error/configuration clarity issues. The implementation was corrected with focused regressions; an incorrect proposal to permit JSON `null` for optional strings was rejected against the approved contract.
+- The corrected tree passed formatting, vet, Linux build, the full test suite, race checks, eight built-binary endpoint probes, and a fragmented-stream probe.
+- The final independent Watcher verified the frozen corrected source and returned PASS for AC1–AC8, exclusions, and every handoff condition within its authority.
+- Owner accepted Phase 1 on 2026-09-21. The accepted public checkpoint contains no credentials or private endpoint configuration; tracked examples use loopback placeholders and runtime reports remain ignored.
