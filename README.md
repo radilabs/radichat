@@ -166,7 +166,7 @@ These boundaries are product choices for the current release state, not missing 
 
 Stage 1 is accepted: local chat and optional endpoint authentication are complete and independently verified. `main` is the current public-ready checkpoint.
 
-There are **no tagged versions or packaged GitHub releases yet**, and the repository does not currently define a versioning policy. `v0.1.0` is the natural initial-release proposal for this accepted feature set, but no tag or release has been created.
+Current release: [`v0.1.0`](https://github.com/radilabs/radichat/releases/tag/v0.1.0), the initial public source release for the accepted local-chat and endpoint-authentication feature set. The repository does not yet define a broader versioning policy.
 
 High-level roadmap:
 
