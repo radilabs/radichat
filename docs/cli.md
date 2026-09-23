@@ -27,7 +27,7 @@ Commands must be the entire trimmed line (`/quit extra` is unknown, not quit). M
 
 ## Streams
 
-* Assistant tokens go to **stdout** with no ANSI wrapping.
+* Assistant tokens go to **stdout** with no ANSI wrapping. In authenticated mode, streamed assistant text is filtered so the bearer token (including a trailing proper prefix) is not printed.
 * Prompts (`> `), trim notices, command errors, and diagnostics go to **stderr**.
 * Prompts are shown only when stdin and stdout are terminals.
 * Redirected stdin is a valid way to drive a short chat; there is no prompt.
@@ -37,12 +37,12 @@ Commands must be the entire trimmed line (`/quit extra` is unknown, not quit). M
 | Code | When |
 | --- | --- |
 | 0 | `-help`, `/quit`, or EOF after a session with no unrecovered turn failure |
-| 1 | invalid/missing config, or redirected/EOF session whose last unrecovered turns failed, or unreadable input |
+| 1 | invalid/missing config (including an unusable `bearer_token_env`), or redirected/EOF session whose last unrecovered turns failed, or unreadable input |
 | 2 | unknown CLI flags or extra arguments |
 | 130 | interrupted (Ctrl-C / SIGINT) |
 
-Startup config errors always exit before the REPL. Per-turn network/protocol errors print to stderr and leave an interactive session running. In redirected/EOF mode, any such failed turn makes the eventual EOF exit code 1.
+Startup config errors always exit before the REPL and before any network access. That includes a missing, empty, or malformed token when `bearer_token_env` is set. Diagnostics do not print the token. Per-turn network/protocol errors print to stderr and leave an interactive session running. In redirected/EOF mode, any such failed turn makes the eventual EOF exit code 1.
 
 ## Persistence
 
-RadiChat does not write history files, logs, or transcripts. A second process sharing the same config starts with an empty conversation.
+RadiChat does not write history files, logs, transcripts, or credentials. A second process sharing the same config starts with an empty conversation. Bearer tokens exist only in process memory after startup resolution from the environment.

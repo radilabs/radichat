@@ -1,8 +1,8 @@
 # Task Execution
 
-Current phase: **Phase 1 — Local Chat Core (accepted)**
+Current phase: **Phase 2 — Endpoint Authentication (accepted)**
 
-`tasks/phase-1.md` records the accepted checkpoint. Phase 0 remains accepted; Phase 2 is not authorized. No phase is currently authorized for execution.
+`tasks/phase-1.md` and `tasks/phase-2.md` record accepted checkpoints. Phase 0 remains accepted. No phase is currently authorized for execution.
 
 ## Operating Rules
 
@@ -28,4 +28,4 @@ Current phase: **Phase 1 — Local Chat Core (accepted)**
 
 ## Current Execution
 
-Owner accepted Phase 1 on 2026-09-21 after independent Watcher PASS. Stop at the accepted checkpoint. Do not create or begin Phase 2 without explicit authorization.
+Owner accepted Phase 1 on 2026-09-21 and Phase 2 on 2026-09-23 after successful endpoint testing and independent Watcher PASS. Stop at the accepted Stage 1 checkpoint. Do not create or begin another phase without explicit authorization.

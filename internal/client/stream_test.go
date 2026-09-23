@@ -28,7 +28,7 @@ func TestClassifyStreamError(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := classifyStreamError(json.RawMessage(tc.raw))
+			err := classifyStreamError(json.RawMessage(tc.raw), false)
 			if tc.ok {
 				if err != nil {
 					t.Fatalf("unexpected err %v", err)

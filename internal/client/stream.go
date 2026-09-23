@@ -79,7 +79,7 @@ func decodeStream(streamCtx, parent context.Context, r io.Reader, opt Options, o
 		if err := json.Unmarshal([]byte(data), &chunk); err != nil {
 			return assembled.String(), fmt.Errorf("malformed stream JSON; the endpoint sent an event RadiChat cannot parse")
 		}
-		if err := classifyStreamError(chunk.Error); err != nil {
+		if err := classifyStreamError(chunk.Error, opt.omitErrorSnippets); err != nil {
 			return assembled.String(), err
 		}
 		if len(chunk.Choices) == 0 {
@@ -233,17 +233,26 @@ func splitSSEField(line string) (name, value string) {
 	return name, value
 }
 
-func classifyStreamError(raw json.RawMessage) error {
+func classifyStreamError(raw json.RawMessage, omitSnippets bool) error {
 	trimmed := bytes.TrimSpace(raw)
 	if len(trimmed) == 0 || string(trimmed) == "null" {
 		return nil
 	}
 	if trimmed[0] != '{' {
+		if omitSnippets {
+			return fmt.Errorf("malformed stream error payload; expected a JSON object or null; server response omitted")
+		}
 		return fmt.Errorf("malformed stream error payload; expected a JSON object or null, %s", snippetHint(string(trimmed)))
 	}
 	var obj map[string]json.RawMessage
 	if err := json.Unmarshal(trimmed, &obj); err != nil {
+		if omitSnippets {
+			return fmt.Errorf("malformed stream error payload; expected a JSON object or null; server response omitted")
+		}
 		return fmt.Errorf("malformed stream error payload; expected a JSON object or null, %s", snippetHint(string(trimmed)))
+	}
+	if omitSnippets {
+		return fmt.Errorf("endpoint error object in stream; %s", omittedBodyHint)
 	}
 	return fmt.Errorf("endpoint error object in stream; %s", snippetHint(string(trimmed)))
 }

@@ -6,6 +6,8 @@ RadiChat speaks a narrow slice of the OpenAI-compatible Chat Completions API.
 
 `POST` to the configured URL with `Content-Type: application/json` and `Accept: text/event-stream`.
 
+When `bearer_token_env` is omitted, `Authorization` is not sent. When it is present, requests include `Authorization: Bearer <token>` using the value resolved at startup from the named environment variable. Cookies are never sent.
+
 Body fields sent:
 
 * `model` — configured model
@@ -13,11 +15,19 @@ Body fields sent:
 * `stream` — always `true`
 * `max_tokens` — configured `generation_reserve`
 
-Not sent: `Authorization`, cookies, `tools`, `functions`, `tool_choice`, `n`, or other option bags.
+Not sent: cookies, `tools`, `functions`, `tool_choice`, `n`, or other option bags. `Authorization` is sent only in the optional authenticated mode described above.
 
-The configured URL is used as-is. Environment HTTP(S) proxies are ignored so the request cannot silently change destination. Redirects are refused. Failed requests are not retried. Keep-alives and response compression are disabled.
+The configured URL is used as-is. Environment HTTP(S) proxies are ignored so the request cannot silently change destination. Redirects are refused, including when a bearer token is configured. Failed requests are not retried. Keep-alives and response compression are disabled.
 
-TLS uses the system certificate pool and TLS 1.2 as a minimum. There is no insecure-skip-verify switch.
+TLS uses the system certificate pool and TLS 1.2 as a minimum. There is no insecure-skip-verify switch, custom CA option, or other TLS configuration field.
+
+When `bearer_token_env` is omitted, non-success HTTP bodies and stream error payloads are shown as a bounded diagnostic snippet, and transport failures include the underlying error text. Redirect refusals include the refused Location (redacted). When `bearer_token_env` is present:
+
+* untrusted HTTP and stream error bodies are omitted; status or stream classification and a fix hint are kept;
+* transport failures are classified (timeout, redirect, or contact failure) without quoting the underlying error or redirect Location, which can echo or re-encode a token;
+* assistant stream text is filtered so a bearer token is not printed, including when it is split across SSE deltas and when a successful stream ends on a proper prefix of the token. Ordinary surrounding text is kept. Zero-auth stream text is unchanged.
+
+Exact-string redaction is only a backstop on remaining error text. Unauthenticated diagnostics are unchanged.
 
 ## Stream
 
@@ -63,4 +73,4 @@ A stalled connection is cancelled and closed. An in-flight turn is not committed
 
 ## Incompatible endpoints
 
-Servers that require authentication, return non-streaming JSON, use a different event format, emit tool calls, or follow redirects will fail with a clear error. RadiChat does not probe alternate URLs or fall back to another protocol.
+Servers that return non-streaming JSON, use a different event format, emit tool calls, or follow redirects will fail with a clear error. RadiChat does not probe alternate URLs or fall back to another protocol. Endpoints that require a bearer token work only when `bearer_token_env` names a valid process environment variable.

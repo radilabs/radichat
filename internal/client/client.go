@@ -25,7 +25,11 @@ const (
 	defaultMaxEventBytes   = 1 << 20
 	defaultMaxErrorBody    = 8 << 10
 	defaultMaxStreamBytes  = 8 << 20
+	omittedBodyHint        = "server response omitted; fix the endpoint or model configuration"
+	secretReplacement      = "[redacted]"
 )
+
+var errRedirectRefused = errors.New("redirect refused; set endpoint to the final chat-completions URL")
 
 // Options controls transport and stream bounds. Zero values receive defaults.
 type Options struct {
@@ -37,6 +41,7 @@ type Options struct {
 	MaxErrorBodyBytes     int
 	MaxStreamBytes        int64
 	DialContext           func(ctx context.Context, network, addr string) (net.Conn, error)
+	omitErrorSnippets     bool
 }
 
 func (o Options) withDefaults() Options {
@@ -95,6 +100,9 @@ func New(cfg config.Config, opt Options) *Client {
 			Transport: transport,
 			Timeout:   0,
 			CheckRedirect: func(req *http.Request, _ []*http.Request) error {
+				if cfg.BearerToken != "" {
+					return errRedirectRefused
+				}
 				return fmt.Errorf("redirect to %s refused; set endpoint to the final chat-completions URL", req.URL.Redacted())
 			},
 		},
@@ -129,6 +137,11 @@ type requestBody struct {
 }
 
 func (c *Client) Stream(ctx context.Context, messages []chat.Message, outputLimit int64, onDelta func(string) error) (string, error) {
+	text, err := c.doStream(ctx, messages, outputLimit, onDelta)
+	return text, c.redactErr(err)
+}
+
+func (c *Client) doStream(ctx context.Context, messages []chat.Message, outputLimit int64, onDelta func(string) error) (string, error) {
 	body := requestBody{
 		Model:     c.cfg.Model,
 		Stream:    true,
@@ -145,10 +158,16 @@ func (c *Client) Stream(ctx context.Context, messages []chat.Message, outputLimi
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.cfg.Endpoint, strings.NewReader(string(payload)))
 	if err != nil {
+		if c.authenticated() {
+			return "", fmt.Errorf("cannot build request to the configured endpoint")
+		}
 		return "", fmt.Errorf("cannot build request to %s: %v", c.cfg.Endpoint, err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "text/event-stream")
+	if c.cfg.BearerToken != "" {
+		req.Header.Set("Authorization", "Bearer "+c.cfg.BearerToken)
+	}
 	var gotConn net.Conn
 	req = req.WithContext(httptrace.WithClientTrace(req.Context(), &httptrace.ClientTrace{
 		GotConn: func(info httptrace.GotConnInfo) {
@@ -173,11 +192,19 @@ func (c *Client) Stream(ctx context.Context, messages []chat.Message, outputLimi
 	defer stopWatch()
 
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		if c.authenticated() {
+			discardBounded(resp.Body, c.opt.MaxErrorBodyBytes)
+			return "", fmt.Errorf("endpoint returned HTTP %d; %s", resp.StatusCode, omittedBodyHint)
+		}
 		snippet := readBounded(resp.Body, c.opt.MaxErrorBodyBytes)
 		return "", fmt.Errorf("endpoint returned HTTP %d; %s", resp.StatusCode, snippetHint(snippet))
 	}
 	ct := strings.ToLower(resp.Header.Get("Content-Type"))
 	if ct != "" && !strings.Contains(ct, "text/event-stream") {
+		if c.authenticated() {
+			discardBounded(resp.Body, c.opt.MaxErrorBodyBytes)
+			return "", fmt.Errorf("endpoint Content-Type is not text/event-stream; %s", omittedBodyHint)
+		}
 		snippet := readBounded(resp.Body, c.opt.MaxErrorBodyBytes)
 		return "", fmt.Errorf("endpoint Content-Type %q is not text/event-stream; %s", resp.Header.Get("Content-Type"), snippetHint(snippet))
 	}
@@ -186,7 +213,35 @@ func (c *Client) Stream(ctx context.Context, messages []chat.Message, outputLimi
 		r:     io.LimitReader(resp.Body, c.opt.MaxStreamBytes+1),
 		reset: resetIdle,
 	}
-	return decodeStream(streamCtx, ctx, limited, c.opt, outputLimit, onDelta)
+	opt := c.opt
+	opt.omitErrorSnippets = c.authenticated()
+	userOnDelta := onDelta
+	var filt *secretFilter
+	if c.authenticated() {
+		filt = newSecretFilter(c.cfg.BearerToken)
+		onDelta = func(s string) error {
+			out := filt.push(s)
+			if out == "" {
+				return nil
+			}
+			if userOnDelta != nil {
+				return userOnDelta(out)
+			}
+			return nil
+		}
+	}
+	text, err := decodeStream(streamCtx, ctx, limited, opt, outputLimit, onDelta)
+	if filt != nil {
+		text = filt.redactAssembled(text)
+		if err == nil {
+			if rest := filt.flush(); rest != "" && userOnDelta != nil {
+				if werr := userOnDelta(rest); werr != nil {
+					err = werr
+				}
+			}
+		}
+	}
+	return text, err
 }
 
 // idleResetReader treats any successful underlying Read that returns bytes as
@@ -208,11 +263,109 @@ func (c *Client) transportError(ctx context.Context, err error) error {
 	if ctx.Err() != nil {
 		return ctx.Err()
 	}
+	if c.authenticated() {
+		if errors.Is(err, errRedirectRefused) {
+			return errRedirectRefused
+		}
+		var ne net.Error
+		if errors.As(err, &ne) && ne.Timeout() {
+			return fmt.Errorf("timed out contacting %s; check that the server is running and responding", c.cfg.Endpoint)
+		}
+		return fmt.Errorf("cannot contact %s; check that the server is running and the endpoint URL is correct", c.cfg.Endpoint)
+	}
 	var ne net.Error
 	if errors.As(err, &ne) && ne.Timeout() {
 		return fmt.Errorf("timed out contacting %s; check that the server is running and responding", c.cfg.Endpoint)
 	}
 	return fmt.Errorf("cannot contact %s: %v; check that the server is running and the endpoint URL is correct", c.cfg.Endpoint, err)
+}
+
+type secretFilter struct {
+	secret  string
+	pending string
+}
+
+func newSecretFilter(secret string) *secretFilter {
+	if secret == "" {
+		return nil
+	}
+	return &secretFilter{secret: secret}
+}
+
+func (f *secretFilter) push(s string) string {
+	if f == nil || f.secret == "" {
+		return s
+	}
+	buf := f.pending + s
+	var out strings.Builder
+	secret := f.secret
+	n := len(secret)
+	i := 0
+	for i < len(buf) {
+		if i+n <= len(buf) && buf[i:i+n] == secret {
+			out.WriteString(secretReplacement)
+			i += n
+			continue
+		}
+		remain := buf[i:]
+		if len(remain) < n && strings.HasPrefix(secret, remain) {
+			f.pending = remain
+			return out.String()
+		}
+		out.WriteByte(buf[i])
+		i++
+	}
+	f.pending = ""
+	return out.String()
+}
+
+func (f *secretFilter) flush() string {
+	if f == nil || f.pending == "" {
+		return ""
+	}
+	f.pending = ""
+	return secretReplacement
+}
+
+func (f *secretFilter) redactAssembled(text string) string {
+	if f == nil {
+		return text
+	}
+	text = strings.ReplaceAll(text, f.secret, secretReplacement)
+	if f.pending != "" && strings.HasSuffix(text, f.pending) {
+		return text[:len(text)-len(f.pending)] + secretReplacement
+	}
+	return text
+}
+
+func (c *Client) authenticated() bool {
+	return c.cfg.BearerToken != ""
+}
+
+func discardBounded(r io.Reader, n int) {
+	_, _ = io.Copy(io.Discard, io.LimitReader(r, int64(n)+1))
+}
+
+func (c *Client) redactString(s string) string {
+	if c.cfg.BearerToken == "" || s == "" {
+		return s
+	}
+	if !strings.Contains(s, c.cfg.BearerToken) {
+		return s
+	}
+	return strings.ReplaceAll(s, c.cfg.BearerToken, "[redacted]")
+}
+
+func (c *Client) redactErr(err error) error {
+	if err == nil {
+		return nil
+	}
+	msg := err.Error()
+	redacted := c.redactString(msg)
+	if redacted == msg {
+		return err
+	}
+	return errors.New(redacted)
 }
 
 func readBounded(r io.Reader, n int) string {

@@ -15,10 +15,12 @@ import (
 const (
 	DefaultPath   = "radichat.json"
 	MaxFileBytes  = 1 << 20
-	allowedFields = "endpoint, model, context_budget, generation_reserve, system_prompt"
+	allowedFields = "endpoint, model, context_budget, generation_reserve, system_prompt, bearer_token_env"
+	maxEnvName    = 256
+	maxTokenBytes = 8 << 10
 )
 
-// Config is the validated Phase 1 runtime configuration.
+// Config is the validated runtime configuration.
 type Config struct {
 	Endpoint          string
 	Model             string
@@ -26,6 +28,8 @@ type Config struct {
 	GenerationReserve int64
 	SystemPrompt      string
 	Path              string
+	BearerTokenEnv    string
+	BearerToken       string
 }
 
 type fileConfig struct {
@@ -34,6 +38,7 @@ type fileConfig struct {
 	ContextBudget     json.RawMessage `json:"context_budget"`
 	GenerationReserve json.RawMessage `json:"generation_reserve"`
 	SystemPrompt      json.RawMessage `json:"system_prompt"`
+	BearerTokenEnv    json.RawMessage `json:"bearer_token_env"`
 }
 
 // Load reads and validates a JSON config file.
@@ -116,6 +121,15 @@ func Parse(path string, data []byte) (Config, error) {
 	if raw.SystemPrompt != nil {
 		cfg.SystemPrompt, err = parseOptionalString(raw.SystemPrompt, "system_prompt")
 		if err != nil {
+			return Config{}, err
+		}
+	}
+	if raw.BearerTokenEnv != nil {
+		cfg.BearerTokenEnv, err = parseRequiredString(raw.BearerTokenEnv, "bearer_token_env")
+		if err != nil {
+			return Config{}, err
+		}
+		if err := resolveBearerToken(&cfg); err != nil {
 			return Config{}, err
 		}
 	}
@@ -204,6 +218,54 @@ func validateEndpoint(endpoint string) error {
 	}
 	if u.Opaque != "" {
 		return fmt.Errorf("endpoint must be a normal http(s) URL, not an opaque URL")
+	}
+	return nil
+}
+
+func resolveBearerToken(cfg *Config) error {
+	name := cfg.BearerTokenEnv
+	if !validEnvName(name) {
+		return fmt.Errorf("bearer_token_env must be a POSIX environment variable name (letters, digits, and underscore; not starting with a digit); fix the name in the config file")
+	}
+	val, ok := os.LookupEnv(name)
+	if !ok {
+		return fmt.Errorf("environment variable named by bearer_token_env is unset; export %s before starting RadiChat", name)
+	}
+	if val == "" {
+		return fmt.Errorf("environment variable named by bearer_token_env is empty; export a nonempty token in %s", name)
+	}
+	if err := validateBearerToken(val); err != nil {
+		return err
+	}
+	cfg.BearerToken = val
+	return nil
+}
+
+func validEnvName(name string) bool {
+	if name == "" || len(name) > maxEnvName {
+		return false
+	}
+	for i := 0; i < len(name); i++ {
+		c := name[i]
+		switch {
+		case c >= 'A' && c <= 'Z', c >= 'a' && c <= 'z', c == '_':
+		case i > 0 && c >= '0' && c <= '9':
+		default:
+			return false
+		}
+	}
+	return true
+}
+
+func validateBearerToken(token string) error {
+	if len(token) > maxTokenBytes {
+		return fmt.Errorf("environment variable named by bearer_token_env is not a usable HTTP header value; use a single-line token without control characters")
+	}
+	for i := 0; i < len(token); i++ {
+		c := token[i]
+		if c < 0x21 || c > 0x7E {
+			return fmt.Errorf("environment variable named by bearer_token_env is not a usable HTTP header value; use a single-line token without control characters")
+		}
 	}
 	return nil
 }

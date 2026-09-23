@@ -6,7 +6,7 @@ The initial target is local models: one Linux binary, one config file, streaming
 
 ## Status
 
-Phase 1 (Local Chat Core) is accepted after independent verification. Phase 0 factory bootstrap is accepted. Phase 2 authentication is not authorized.
+Phase 2 (Endpoint Authentication) is accepted after owner testing and independent verification. Phase 1 (Local Chat Core) and Phase 0 factory bootstrap are also accepted. Optional bearer authentication is available for endpoints that require it; local unauthenticated use is unchanged.
 
 ## Build (Linux)
 
@@ -39,7 +39,7 @@ Or select another file:
 ./radichat -help
 ```
 
-The process reads only that JSON file for endpoint, model, context budget, generation reserve, and optional system prompt. No API key, environment login, or discovery call is used in Phase 1.
+The process reads that JSON file for endpoint, model, context budget, generation reserve, optional system prompt, and optional `bearer_token_env`. Local use does not require a token. When `bearer_token_env` is set, RadiChat reads the named process environment variable at startup and sends `Authorization: Bearer <token>` to the configured endpoint only. The config file must contain the variable name, never the token.
 
 Type a line and press Enter to send it. Slash commands:
 
@@ -58,8 +58,8 @@ Blank lines are ignored. Unknown slash commands are rejected and not sent to the
 ## Roadmap
 
 - **Phase 0** — Factory bootstrap and contracts (accepted).
-- **Phase 1** — single Go binary for Linux, config file, unauthenticated OpenAI-compatible chat.
-- **Phase 2** — optional authentication for endpoints that require it.
+- **Phase 1** — single Go binary for Linux, config file, unauthenticated OpenAI-compatible chat (accepted).
+- **Phase 2** — optional bearer authentication via an environment variable named in the config file.
 
 Session persistence, databases, compaction, tools, agents, embeddings, and other harness features are explicitly deferred.
 

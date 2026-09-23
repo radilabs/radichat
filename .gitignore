@@ -22,6 +22,7 @@ config.local.*
 
 # Phase 1 live config, build/cache output, and local worker runtime
 /radichat.json
+/radichat.local.json
 /bin/
 /dist/
 /.cache/
