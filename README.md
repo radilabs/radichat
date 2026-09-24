@@ -17,7 +17,7 @@ The project exists to keep the client side boring: one Go binary, one JSON file,
 - Deterministic context-budget trimming for small model windows.
 - `/clear` to reset conversation history and `/quit` to exit.
 - Strict HTTPS verification, redirect refusal, no retries, and no proxy discovery.
-- One Linux executable built with the Go standard library only.
+- One self-contained executable built with the Go standard library only.
 
 ## Who it is for
 
@@ -25,9 +25,13 @@ RadiChat fits developers and model users who already have an OpenAI-compatible e
 
 It is intentionally not an agent runtime, automation harness, model server, or full-screen TUI.
 
+## Install a prebuilt binary
+
+The [`v0.1.0` release](https://github.com/radilabs/radichat/releases/tag/v0.1.0) provides binaries for Linux and macOS on amd64 and arm64. Download the matching artifact and verify it against `SHA256SUMS` from the same release before running it. The macOS binaries are unsigned and not notarized.
+
 ## Install from source
 
-RadiChat currently ships from source. You need Linux and Go 1.22 or newer.
+You need Go 1.22 or newer.
 
 ```bash
 git clone https://github.com/radilabs/radichat.git
@@ -72,6 +76,33 @@ Run RadiChat:
 ```
 
 No token is needed. `radichat.local.json` and the default `radichat.json` are ignored by Git.
+
+## Run in a container
+
+The public image supports `linux/amd64` and `linux/arm64`. Pull the versioned image:
+
+```bash
+docker pull ghcr.io/radilabs/radichat:v0.1.0
+```
+
+For a model server listening on the Linux host at `127.0.0.1`, mount the local config read-only and use host networking:
+
+```bash
+docker run --rm -it --network host \
+  -v "$PWD/radichat.local.json:/config/radichat.json:ro" \
+  ghcr.io/radilabs/radichat:v0.1.0
+```
+
+For an authenticated remote endpoint, forward the already-exported variable by name. Its value does not appear in the command:
+
+```bash
+docker run --rm -it \
+  -v "$PWD/radichat.local.json:/config/radichat.json:ro" \
+  -e RADICHAT_BEARER_TOKEN \
+  ghcr.io/radilabs/radichat:v0.1.0
+```
+
+The image runs as non-root and contains the static RadiChat binary plus the CA certificates needed for strict HTTPS verification. See [Container image](docs/container.md) for image digests, networking details, and verification scope.
 
 ## Authenticated endpoint
 
@@ -181,6 +212,7 @@ High-level roadmap:
 - [Protocol subset](docs/protocol.md)
 - [Context accounting](docs/context-accounting.md)
 - [CLI behavior](docs/cli.md)
+- [Container image](docs/container.md)
 - [Accepted Phase 2 handoff](docs/handoffs/phase-2.md)
 - [Product direction](PROJECT.md)
 
