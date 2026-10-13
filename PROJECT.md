@@ -139,7 +139,11 @@ Maintains project structure, stage/phase contracts, architecture boundaries, and
 
 ### Driver / Orchestrator
 
-Coordinates execution according to `DRIVER.md`.
+Coordinates execution according to the materialized Factory kit (`.factory/DRIVER.md`).
+
+### Architect
+
+Offers bounded technical design, interfaces, tradeoffs, and test implications within the authorized phase. Architecture review is not phase acceptance.
 
 ### Reviewer / Dr Watson
 
@@ -151,11 +155,11 @@ Implements only the authorized phase.
 
 ### Verifier / Watcher
 
-Independently verifies the active phase according to `WATCHER.md`.
+Independently verifies the active phase according to the materialized Factory kit (`.factory/WATCHER.md`).
 
-### Archivist / Scribe
+### Writer / Documentation Steward
 
-Promotes only durable execution knowledge into project artifacts.
+Audits and corrects documentation drift; promotes durable knowledge into `docs/`, `decisions/`, and task/handoff records. Cannot silently rewrite accepted decisions or phase contracts.
 
 ## Information Management
 

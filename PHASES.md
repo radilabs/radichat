@@ -221,6 +221,81 @@ Then STOP.
 
 ---
 
+# Stage 2 — Factory v1.2 Runtime
+
+## Stage Goal
+
+Run RadiChat development on Factory Core Concepts v1.2 with full persona coverage
+and a clean public/private boundary.
+
+## Stage Entry Conditions
+
+* Stage 1 accepted (Phase 2 accepted).
+* Owner explicitly authorizes Phase 3.
+
+## Phases in This Stage
+
+* Phase 3 — Factory v1.2 Migration
+
+# Phase 3 — Factory v1.2 Migration (Stage 2)
+
+## Goal
+
+Migrate repository process structure to Factory Core Concepts v1.2 without
+changing product behavior or accepted phase evidence.
+
+## Entry Conditions
+
+* Stage 1 accepted.
+* Owner explicitly authorizes Phase 3.
+* `tasks/phase-3.md` is created only after authorization.
+
+## Scope
+
+* Persistent-surface updates: `AGENTS.md`, `PROJECT.md` roles, `findings/`,
+  `tasks/README.md` alignment, `.gitignore`.
+* Untrack Factory runtime paths (`DRIVER.md`, `WATCHER.md`, `reports/README.md`).
+* Materialize the ephemeral `.factory/` kit from a pinned Core Concepts commit and
+  fill project-specific pipeline commands.
+* Record the migration as a durable decision.
+
+## Explicit Exclusions
+
+* Go source code, product behavior, configuration formats.
+* `PHASES.md` contracts of accepted phases (Phase 0/1/2 remain immutable).
+* Historical `reports/` contents.
+* New product features or future phase task files.
+
+## Acceptance Criteria
+
+1. `AGENTS.md` routes all v1.2 managed roles (Driver, Architect, Coder, Writer,
+   Watcher) to `.factory/` entrypoints and retains the CAO transport section.
+2. `PROJECT.md` roles include Architect and Writer/Documentation Steward.
+3. `git ls-files` contains no `.factory/`, `reports/`, root `DRIVER.md`, or root
+   `WATCHER.md` paths; `sh .factory/check-public-surface.sh` prints PASS.
+4. `.factory/` contains role entrypoints, canonical contract snapshots,
+   `defaults.yaml`, `agents.yaml`, filled `pipeline.yaml`, and `source.txt`.
+5. The Core Concepts pin is an exact commit SHA (40 hex chars — never a branch,
+   tag, or moving ref), recorded in `.factory/source.txt` **and** durably in
+   `decisions/0002-factory-v1.2-migration.md`.
+6. `decisions/` records the migration decision; `findings/README.md` exists.
+7. `go build ./...`, `go vet ./...`, and `go test ./...` pass unchanged.
+8. Accepted phase task files, handoffs, and decisions are unmodified.
+
+## Handoff Contract
+
+Before Phase 3 can be declared complete:
+
+* all acceptance criteria are demonstrated with direct evidence;
+* changed files and checks are recorded;
+* known limitations and deferred work are recorded;
+* Watcher verification has PASSed;
+* owner explicitly accepts the phase.
+
+Then STOP.
+
+---
+
 # Future Phases
 
 Planned concept only, not authorized or contracted:

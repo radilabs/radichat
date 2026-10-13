@@ -24,13 +24,25 @@ CAO reports process/session state. It does not expand role authority or Factory 
 
 A communication failure does not grant the Driver permission to inherit the failed worker's role automatically.
 
-## Role Entry Points
+## Runtime Role Entrypoints
 
-### Driver / Orchestrator
+Managed roles read their entrypoint from the ephemeral Factory kit under `.factory/`:
 
-Read `DRIVER.md`, then `tasks/README.md` and the currently authorized phase task file.
+| Role | Entrypoint | Canonical contract |
+|---|---|---|
+| Driver / Orchestrator | `.factory/DRIVER.md` | `.factory/contracts/driver.md` |
+| Architect | `.factory/ARCHITECT.md` | `.factory/contracts/architect.md` |
+| Coder Team | `.factory/CODER.md` | `.factory/contracts/coder.md` |
+| Writer / Documentation Steward | `.factory/WRITER.md` | `.factory/contracts/documentation-steward.md` |
+| Watcher / Verifier | `.factory/WATCHER.md` | `.factory/contracts/watcher.md` |
 
-The Driver coordinates execution and gates. It does not invent work or accept phases.
+Dr Watson is an external reviewer invoked by the Driver with the active contract, task file, diff, and evidence; it has no standing entrypoint.
+
+The `.factory/` kit is materialized from a pinned Core Concepts version (recorded in `.factory/source.txt` and in `decisions/`). It is execution machinery, not project source or lifecycle authority, and may be deleted and rehydrated.
+
+### Architect
+
+Provides bounded technical design within the authorized phase: interfaces, invariants, dependencies, failure modes, tradeoffs, and test implications. Inspects the existing system before proposing changes. Outputs are proposals until explicitly adopted; architecture review is not phase acceptance. Reports scope conflicts and decisions requiring owner approval through the Driver.
 
 ### Coder Team
 
@@ -42,9 +54,7 @@ When launched through CAO, remain within the assigned worker session and return 
 
 ### Watcher / Verifier
 
-Read `WATCHER.md`, the active phase contract in `PHASES.md`, and the active phase task file.
-
-Verify actual repository state and evidence independently.
+Verify actual repository state and evidence independently against the active phase contract.
 
 When launched through CAO, the session transport does not alter Watcher independence or PASS/FAIL requirements.
 
@@ -53,6 +63,10 @@ When launched through CAO, the session transport does not alter Watcher independ
 Review the active implementation for risks and omissions. Do not expand scope. Out-of-scope findings become Deferred Work unless explicitly promoted.
 
 When launched through CAO, return the requested review result explicitly; process completion alone is not a review result.
+
+### Writer / Documentation Steward
+
+Audit documentation drift against code, accepted evidence, and lifecycle authority; propose the smallest correction and its source of truth. Never silently rewrite accepted decisions or phase contracts. A Writer sign-off is never Watcher PASS.
 
 ## Stop Rule
 

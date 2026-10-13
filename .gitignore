@@ -1,6 +1,5 @@
 # Factory runtime artifacts
 reports/*
-!reports/README.md
 
 # Go build/test artifacts
 radichat
@@ -34,3 +33,6 @@ config.local.*
 /.codex/
 *.prof
 coverage*.out
+
+# Local agent workspace
+.hermes/
