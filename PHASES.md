@@ -312,6 +312,7 @@ Provide reusable, reproducible test tooling for RadiChat's documented OpenAI-com
 ## Phases in This Stage
 
 * Phase 4 — `radichat-mock` (authorized 2026-10-14)
+* Phase 5 — Adversarial protocol investigation (authorized 2026-10-14)
 
 # Phase 4 — `radichat-mock` (Stage 3)
 
@@ -364,6 +365,57 @@ Before Phase 4 can be declared complete:
 * the evidence package is presented to the Owner, and explicit Owner acceptance is recorded.
 
 Then STOP. Do not start Phase 5 or modify RadiChat product code.
+
+# Phase 5 — Adversarial Protocol Investigation (Stage 3)
+
+## Goal
+
+Use the accepted `radichat-mock` tooling to conduct a bounded, reproducible adversarial investigation of RadiChat against its documented protocol behavior. Record verified divergences as durable findings without changing RadiChat product code or fixing defects.
+
+## Entry Conditions
+
+* Stage 2 and Stage 3 / Phase 4 accepted; Phase 4 checkpoint is `8e2951274e52f72963ad8ecb1d75a4a477fe6561`.
+* Owner explicitly authorized Stage 3 / Phase 5 on 2026-10-14.
+* `tasks/phase-5.md` is created after authorization and before test execution.
+
+## Scope
+
+* A test-only black-box harness under `internal/discovery/`, guarded by `//go:build mockdiscovery`, using `radichat-mock` and temporary configs/binaries.
+* Harness-local `p5-` scenarios may be registered from test code when the accepted Phase 4 catalog lacks a needed payload. The accepted mock package, CLI, and product code are not changed.
+* A bounded must-run matrix derived from `docs/protocol.md`, covering successful SSE parsing and fragmentation; malformed streams and early termination; HTTP errors and non-SSE responses; authentication and token redaction; redirects; and context-accounting boundaries and rollback.
+* Reproducible per-case evidence under ignored `.factory/reports/` and one durable `findings/F-000N-*.md` per verified protocol divergence.
+* Independent Luna 6 reproduction of confirmed findings plus additional cases selected independently from the documented contract; separate independent Watcher verification.
+
+## Explicit Exclusions
+
+* Any non-test RadiChat source change, product behavior change, defect fix, Phase 6 work, or changes to accepted Phase 0–4 evidence.
+* Changes to `internal/mockllm/`, `cmd/radichat-mock/`, `docs/protocol.md`, or other product documentation to make an observed result appear compliant.
+* Real credentials, external services, publishing, or showcase release. Use only the documented fake sentinel credentials.
+* Treating undocumented behavior as a defect. Exploratory probes may be recorded in the task report but do not become findings unless separately authorized.
+* A minimum defect count; zero verified divergences is a valid result.
+
+## Acceptance Criteria
+
+1. The tracked harness is test-only and build-tagged; the default `go test ./...` suite is unchanged. No product source, mock implementation, Phase 0–4 task/handoff/decision, or protocol contract is modified.
+2. The must-run cases listed in `tasks/phase-5.md` execute with repeatable configs and exact case IDs. They cover stream success, fixed-fragment SSE parsing, malformed JSON/content and multiple choices, early EOF/truncation, supported stream-error/finish handling, HTTP 401/429/500/404, non-SSE responses, redirect refusal/no-follow, authenticated and unauthenticated behavior, token echo/redaction, request-field/header assertions, exact and over-budget UTF-8 byte boundaries, pair trimming, failed-turn rollback, `/clear`, and `max_tokens`.
+3. `docs/protocol.md` and the linked context/CLI docs are the sole binding oracle. Each case records a verdict and the observed exit code, sanitized stdout/stderr evidence, and relevant request-record fields. Stderr wording not promised by the docs is advisory only. Sentinel values never appear in captured evidence or durable findings.
+4. Every verified documented divergence has one durable `new` finding in `findings/`, with case/scenario ID, exact reproduction command, environment/config details excluding secret values, expected vs observed behavior, protocol citation, and supporting `.factory/reports/` evidence. No unverified hypothesis is reported as a defect; no findings are required.
+5. Luna 6 uses a separate T3 delegated context to derive its own oracle before examining Worker results, reproduces each Worker finding from a clean state, uses an independent raw `net.Listener` harness for selected critical cases, and exercises at least three additional protocol-documented cases not selected by the Worker.
+6. Dr Watson reviews the frozen Phase 5 candidate for scope, evidence quality, and omissions. The existing independent Watcher then verifies every acceptance criterion and reproduces the findings independently; it records explicit PASS or FAIL under `.factory/reports/`.
+7. `go test -tags mockdiscovery ./internal/discovery -count=1 -run 'P5' -v`, default `go test ./... -count=1`, `go vet ./...`, `go build ./...`, `gofmt -l .`, `git diff --check`, and `sh .factory/check-public-surface.sh` produce recorded outcomes. Any known slow cases are opt-in and may be omitted to protect the deadline.
+8. The final Phase 5 evidence package, findings (if any), Dr Watson review, independent Luna results, Watcher verdict, known limits, and an unpublished draft Discord showcase post are presented to the Owner by 2026-10-15 14:00 CEST. No publication occurs without separate Owner authorization.
+
+## Handoff Contract
+
+Before Phase 5 can be declared complete:
+
+* the bounded matrix is run or any omitted case is explicitly identified with a reason;
+* verified divergences and their reproducible evidence are recorded without fixes;
+* accepted Phase 0–4 evidence and all product code are preserved;
+* Luna 6 and Watcher independently report their results, and Dr Watson's review is resolved or listed as an open concern;
+* the Owner receives the evidence package and draft showcase post.
+
+Then STOP for Owner acceptance. Do not publish or begin any fix phase.
 
 # Future Phases
 

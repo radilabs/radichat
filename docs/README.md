@@ -8,6 +8,7 @@ This directory contains RadiChat's durable user and protocol documentation.
 - [CLI behavior](cli.md) — invocation, commands, output streams, and exit codes.
 - [Container image](container.md) — public image references, configuration mounts, networking, and authentication.
 - [Testing with radichat-mock](testing-mock.md) — development mock of the endpoint for protocol and auth tests; not part of the product.
-- [Accepted handoffs](handoffs/README.md) — concise snapshots of verified phase checkpoints, including Phase 4.
+- [Phase 5 investigation summary](testing-phase-5.md) — public test coverage, reproducible commands, results, and limits from the bounded adversarial investigation.
+- [Accepted handoffs](handoffs/README.md) — concise snapshots of verified phase checkpoints, including Phases 4 and 5.
 
 The repository root [README](../README.md) is the public starting point for installation and first use.

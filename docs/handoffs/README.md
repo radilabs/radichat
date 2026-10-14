@@ -61,4 +61,4 @@ Status: **accepted**
 - ...
 ```
 
-Keep handoffs concise. Promote only durable accepted state. Raw Watcher and Dr Watson reports remain under ignored `reports/`.
+Keep handoffs concise. Promote only durable accepted state. Raw Watcher and Dr Watson reports remain under ignored `reports/`; handoffs summarize accepted outcomes so readers do not need those runtime files.
