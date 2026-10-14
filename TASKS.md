@@ -1,27 +1,26 @@
 # RadiChat — Tasks
 
-Detailed implementation tasks live under `tasks/`.
-
-Only the currently authorized phase has a detailed task file that may be executed.
-
 ## Current Execution
 
-- **Current stage:** Stage 2 — Factory v1.2 Runtime
-- **Current phase:** Phase 3 — Factory v1.2 Migration
-- **Status:** accepted
+- **Current stage:** Stage 3 — Protocol Verification Tooling
+- **Current phase:** Phase 4 — `radichat-mock`
+- **Status:** accepted (Owner acceptance: 2026-10-14)
 
-## Task File Map
+No phase is currently authorized. Phase 5 adversarial defect discovery requires separate Owner authorization. Product-code fixes and showcase publication are not authorized.
+
+Completed task: `tasks/phase-4.md`.
+
+Active-task map:
 
 ```text
-tasks/
-├── README.md
-├── phase-0.md
-├── phase-1.md  (accepted)
-├── phase-2.md  (accepted)
-└── phase-3.md  (accepted)
+tasks/phase-4.md  (accepted)
 ```
 
-Phase 3 is accepted. Phase 2 and Phase 1 remain accepted.
+The accepted Stage 2 / Phase 3 checkpoint and all earlier accepted history remain preserved.
+
+Detailed implementation tasks live under `tasks/`.
+
+Only a currently authorized phase may be executed. Phase 4 is accepted; no later phase is authorized.
 
 ## Authorization
 
@@ -33,11 +32,13 @@ Owner explicitly authorized Phase 3 on 2026-10-13: migrate the repository proces
 
 Owner explicitly accepted Phase 3 on 2026-10-13 after independent Watcher PASS on AC1–AC8; checkpoint commit and push to `main` authorized with conditions: preserve the verified state; no product code changes; no scope expansion.
 
+Owner explicitly authorized Stage 3 / Phase 4 (`radichat-mock`) on 2026-10-14. Owner accepted Phase 4 on 2026-10-14 after independent Watcher PASS on AC1–AC8; the accepted checkpoint commit and push to the existing `main` branch are authorized. Phase 5 remains unauthorized.
+
 ## History
 
-Last completed stage: **Stage 2 — Factory v1.2 Runtime**.
+Last completed stage: **Stage 3 — Protocol Verification Tooling (Phase 4 accepted; later phase not authorized)**.
 
-Last completed phase: **Phase 3 — Factory v1.2 Migration**.
+Last completed phase: **Phase 4 — `radichat-mock`**.
 
 ## Authority
 

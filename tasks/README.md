@@ -1,8 +1,8 @@
 # Task Execution
 
-Current phase: **Phase 3 — Factory v1.2 Migration (accepted)**
+Current phase: **Stage 3 / Phase 4 — `radichat-mock` (accepted)**
 
-`tasks/phase-1.md` and `tasks/phase-2.md` record accepted checkpoints. Phase 0 remains accepted. Phase 3 is accepted.
+Phases 0–4 are accepted. Phase 4's durable handoff is `docs/handoffs/phase-4.md`.
 
 ## Operating Rules
 
@@ -26,10 +26,12 @@ Current phase: **Phase 3 — Factory v1.2 Migration (accepted)**
 * Stop at phase handoff.
 * Never create or begin the next phase task file automatically.
 
-## Current Execution
+## Authorization History
 
 Owner accepted Phase 1 on 2026-09-21 and Phase 2 on 2026-09-23 after successful endpoint testing and independent Watcher PASS.
 
-Owner authorized Phase 3 (Factory v1.2 Migration) on 2026-10-13; baseline tag `pre-factory-v1.2` @ `bf60cc7`.
+Owner authorized Stage 2 / Phase 3 (Factory v1.2 Migration) on 2026-10-13 and accepted it after independent Watcher PASS. That accepted checkpoint is preserved.
 
-Owner accepted Phase 3 on 2026-10-13 after independent Watcher PASS on AC1–AC8; checkpoint commit and push to `main` authorized. Stop at the accepted Stage 2 checkpoint. Do not create or begin another phase without explicit authorization.
+Owner authorized Stage 3 / Phase 4 (`radichat-mock`) on 2026-10-14. Only `tasks/phase-4.md` is active. Phase 5 adversarial investigation, product-code fixes, and showcase publication are outside the current authorization.
+
+Owner accepted Stage 3 / Phase 4 on 2026-10-14 after independent Watcher PASS on AC1–AC8. Its accepted checkpoint is the commit containing `docs/handoffs/phase-4.md`. No phase is currently authorized; Phase 5 requires separate Owner authorization.
