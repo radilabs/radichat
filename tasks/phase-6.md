@@ -1,6 +1,6 @@
 # Stage 4 / Phase 6 — v0.1.1 File I/O and Batch Support
 
-**Status:** Corrected candidate has fresh independent Watcher PASS. Owner-authorized review-checkpoint commit and push are in progress; Phase 6 acceptance remains pending Owner inspection.
+**Status:** Accepted and closed by the Owner on 2026-10-23 after fresh independent Watcher PASS. Review-checkpoint implementation commit is pushed and remote parity was verified. No tag, release, image publication, showcase publication, or later phase is authorized.
 
 **Authorization:** Owner approved design commit `334e9710efeab981782870df4bc0e050ef195be7` and authorized Stage 4 / Phase 6 on 2026-10-23.
 
@@ -72,7 +72,7 @@ Record actual command and result for each:
 | 2026-10-23 | `sh .factory/check-public-surface.sh` (rerun) | Pass. No configured Factory runtime paths are tracked. |
 | 2026-10-23 | Correction scope | This correction changed `examples/kubernetes/configmap.json`, `examples/kubernetes/job.json`, `examples/kubernetes/kubernetes_test.go`, and `docs/kubernetes.md`. No RadiChat product source was edited for the correction. |
 | 2026-10-23 | Fresh independent Watcher | PASS on corrected identity `7400ede49b71e846a86771ea950eba4da7206a4752c30957191460a5062e3a8b`, baseline `67a573944d9d87313a7aef064e295afda93bbe92`; report `.factory/reports/stage-4-phase-6-watcher-02.md` (ignored runtime artifact). Identity independently recomputed MATCH; all required checks passed. Verification only, not Owner acceptance. |
-| — | Owner acceptance | Pending Owner and ChatGPT inspection after review-checkpoint push. |
+| 2026-10-23 | Owner acceptance | Owner accepted Stage 4 / Phase 6 after reviewing the corrected candidate and fresh independent Watcher PASS. The checkpoint is closed; no release, tag, image/showcase publication, or later phase is authorized. Durable handoff: `docs/handoffs/phase-6.md`. |
 
 ## Known limits and deferred work
 
@@ -83,14 +83,13 @@ Record actual command and result for each:
 - Non-blocking risk for Owner review: SIGTERM cannot cancel a process blocked opening an input FIFO; it exits 143 only after a writer connects and control reaches the REPL. The Kubernetes example uses a regular input file. No implementation change was made for this limitation.
 - The example endpoint is `https://llm.default.svc.cluster.local/v1/chat/completions` because bearer-token auth is configured. TLS certificate provisioning is an operator prerequisite. The bearer-token-over-HTTP observation is resolved for this example. No cluster was contacted.
 - The example Job sets `automountServiceAccountToken: false` on `spec.template.spec`. No cluster was contacted to observe that setting.
-- The candidate is uncommitted. Identity above excludes this task file and `TASKS.md` so recording the hash does not change it.
 - `TestRecordSurvivesTrimAndClear` proves trimming with `trimmed_pairs` and the stderr notice. Under budget 180 the staged request stays at 2 messages, so message-count shrinkage is not the signal.
 - `TestJSONLInterruptRecordOmitsPartial` releases the mock handler before server close. Exit 130 was observed and the JSONL record did not contain the partial assistant text.
 - SIGPIPE behavior was not given a custom test; it remains the Go/Unix default.
 
 ## Handoff state
 
-Implementation: corrected candidate frozen for Driver review. Tasks 1–7 of `docs/superpowers/plans/2026-10-23-v011-file-io-batch.md` remain implemented. The Owner correction changes the Kubernetes example only.
+Implementation: accepted and closed by the Owner on 2026-10-23. Tasks 1–7 of `docs/superpowers/plans/2026-10-23-v011-file-io-batch.md` are implemented. The final Owner correction updates only the Kubernetes example and documentation.
 
 Changed surfaces: config prompt-file loading, startup fit, `-input`, `-output`, REPL line reader and JSONL records, additive `StreamResult`, SIGINT 130 and SIGTERM 143, docs, decision 0003, and `examples/kubernetes`.
 
@@ -102,6 +101,6 @@ Corrected content identity: `7400ede49b71e846a86771ea950eba4da7206a4752c30957191
 
 Fresh independent Watcher: PASS on corrected identity `7400ede49b71e846a86771ea950eba4da7206a4752c30957191460a5062e3a8b`; report `.factory/reports/stage-4-phase-6-watcher-02.md` (ignored runtime artifact).
 
-Review checkpoint: candidate commit `c77110d76633bef27dd1f4f347fe46c3c629d1ed` was pushed to `main`; `origin/main` matched this commit and tree at verification, with a clean working tree. This checkpoint is not Phase 6 acceptance. Owner inspection remains pending.
+Accepted checkpoint: Owner accepted Phase 6 on 2026-10-23 after reviewing the corrected candidate and fresh independent Watcher PASS. Implementation commit `c77110d76633bef27dd1f4f347fe46c3c629d1ed` was pushed to `main`; local/remote identity and tree matched, with a clean working tree. Durable handoff: `docs/handoffs/phase-6.md`. No later phase, tag, release, image publication, or showcase publication is authorized.
 
 Do not merge, tag, release, or publish without separate Owner authorization.

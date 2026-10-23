@@ -2,28 +2,28 @@
 
 ## Current Execution
 
-- **Current stage:** Stage 4 — v0.1.1 File I/O and Batch Support
-- **Current phase:** Stage 4 / Phase 6 — v0.1.1 File I/O and Batch Support
-- **Last accepted phase:** Stage 3 / Phase 5 — Adversarial Protocol Investigation
-- **Status:** Corrected Phase 6 candidate commit `c77110d76633bef27dd1f4f347fe46c3c629d1ed` was pushed to `main`; remote matched at verification. Fresh independent Watcher PASS is recorded. Owner inspection and final Phase 6 acceptance are pending. No tag or release.
+- **Completed stage:** Stage 4 — v0.1.1 File I/O and Batch Support
+- **Current phase:** None authorized for execution.
+- **Last accepted phase:** Stage 4 / Phase 6 — v0.1.1 File I/O and Batch Support
+- **Status:** Phase 6 accepted by the Owner on 2026-10-23 after fresh independent Watcher PASS. Accepted implementation checkpoint `c77110d76633bef27dd1f4f347fe46c3c629d1ed` was pushed to `main`; remote parity was verified. No later phase is authorized. No tag or release.
 
-Phase 5 is complete. Phase 6 is the v0.1.1 file I/O and batch feature phase. Product fixes remain unauthorized; historical Phase 5 references to “Phase 6” meant the then-planned product-fix phase. The Build Week showcase package remains unpublished; publication still requires separate Owner authorization.
+Phases 0–6 are accepted. Phase 6 delivered v0.1.1 file I/O and batch support. Historical Phase 5 references to “Phase 6” meant the then-planned product-fix phase. No next phase is authorized. Release, tag, image publication, and showcase publication require separate Owner authorization.
 
-Accepted task record: `tasks/phase-5.md`.
-Active task record: `tasks/phase-6.md`.
+Accepted task records: `tasks/phase-5.md`, `tasks/phase-6.md`.
+Durable Phase 6 handoff: `docs/handoffs/phase-6.md`.
 
 Task map:
 
 ```text
 tasks/phase-5.md  (accepted)
-tasks/phase-6.md  (active; Stage 4 / Phase 6)
+tasks/phase-6.md  (accepted; Stage 4 / Phase 6)
 ```
 
 The accepted Stage 2 / Phase 3 checkpoint and all earlier accepted history remain preserved.
 
 Detailed implementation tasks live under `tasks/`.
 
-Phases 0–5 are accepted and preserved. Stage 4 / Phase 6 is active.
+Phases 0–6 are accepted and preserved. No phase is currently authorized for execution.
 
 ## v0.1.1 Milestone Brief — File I/O and Batch Support (Owner-requested)
 
@@ -62,9 +62,11 @@ Owner approved the v0.1.1 File I/O and Batch design at commit `334e9710efeab9817
 
 ## History
 
-Last completed phase: **Stage 3 / Phase 5 — Adversarial Protocol Investigation**.
+Last completed phase: **Stage 4 / Phase 6 — v0.1.1 File I/O and Batch Support**.
 
-Active phase: **Stage 4 / Phase 6 — v0.1.1 File I/O and Batch Support**.
+Last accepted phase: **Stage 4 / Phase 6 — v0.1.1 File I/O and Batch Support**.
+
+No phase is currently authorized for execution.
 
 ## Authority
 
@@ -77,3 +79,5 @@ Driver behavior lives in `.factory/DRIVER.md` (materialized Factory kit).
 Watcher verification behavior lives in `.factory/WATCHER.md` (materialized Factory kit).
 
 Do not create or execute later-phase task files in advance.
+
+Owner explicitly accepted Stage 4 / Phase 6 on 2026-10-23 after reviewing the corrected candidate and fresh independent Watcher PASS. The checkpoint is closed; this acceptance does not authorize tagging, release, image publication, showcase publication, or another phase. See `docs/handoffs/phase-6.md`.
