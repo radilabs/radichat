@@ -23,6 +23,23 @@ Detailed implementation tasks live under `tasks/`.
 
 Phases 0–4 are accepted and preserved. No phase is currently authorized.
 
+## Next Milestone — v0.1.1: File I/O and Batch Support (Owner-requested, planning only)
+
+Owner requested this bounded next step on 2026-10-23. This entry is a product brief for the Factory to turn into an explicit stage/phase contract in `PHASES.md` before implementation. It is **not** an active phase, an implementation task file, or authorization to merge or release. Existing accepted history remains unchanged.
+
+**Product intent:** Keep RadiChat a small Unix-style OpenAI-compatible chat client; support manual local batch testing and execution inside a Kubernetes Job without coupling the client to Kubernetes.
+
+**Requested behavior and scenarios:**
+
+1. **System prompt from file:** Allow a readable UTF-8 file to supply the configured system message (proposed `system_prompt_file` JSON key). Mutually exclusive with inline `system_prompt`; fail clearly on conflicts, missing/unreadable/oversized files and when prompt cannot fit the context budget. Decide and document relative-path resolution.
+2. **Local sequential batch:** Preserve existing stdin redirection (one input line = one user turn, sequentially, with existing conversation and `/clear` semantics). Provide opt-in machine-readable output, proposed `-output PATH` writing JSONL records that correlate input with successful complete assistant output. Define a precise policy for errors, partial streams, failed turns, file creation/appending/overwrite, interruption, and stdout behavior before coding. Never report partial output as a successful completion.
+3. **Kubernetes Job example:** Document a Job using mounted config and prompt files (ConfigMap/volume as suitable), stdin or a narrowly scoped file-input option only if necessary, and stdout/stderr collection by Kubernetes. Output persistence, routing, and Job/CronJob scheduling belong to Kubernetes/logging infrastructure, not RadiChat. Container execution must remain non-interactive and work without a writable filesystem.
+4. **Validation:** Add focused tests for configuration, file boundaries, successful and failed streamed turns, JSONL escaping/correlation, EOF, `/clear`, and backward compatibility; provide reproducible local and Kubernetes examples and run the repository's standard checks.
+
+**Excluded:** database, session reload/resume, implicit transcript storage, concurrent requests, retries, scheduling/orchestration, Kubernetes client/API integration, agents/tools, new external dependencies, and changes to the existing supported inference protocol.
+
+**Factory handoff:** Architect reviews the exact CLI/config and output contract, Driver establishes and records the bounded phase authorization in `PHASES.md`, then creates the active `tasks/phase-N.md` as required by the repository rules. Coder implements, independent Watcher verifies, and Owner accepts before merge/release. Do not infer from this brief that any phase has started.
+
 ## Authorization
 
 Owner explicitly authorized Phase 2 on 2026-09-22, with optional environment-sourced bearer authentication, strict TLS, no credential leakage, and an owner acceptance gate before any checkpoint commit or push.
