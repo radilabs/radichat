@@ -5,7 +5,7 @@
 - **Current stage:** Stage 4 — v0.1.1 File I/O and Batch Support
 - **Current phase:** Stage 4 / Phase 6 — v0.1.1 File I/O and Batch Support
 - **Last accepted phase:** Stage 3 / Phase 5 — Adversarial Protocol Investigation
-- **Status:** Phase 6 authorized by Owner on 2026-10-23 after approving design commit `334e9710efeab981782870df4bc0e050ef195be7`; contract and task are active, implementation is pending plan review.
+- **Status:** Corrected Phase 6 review checkpoint is committed and pushed to `main`; fresh independent Watcher PASS recorded. Owner inspection and final Phase 6 acceptance are pending. No tag or release.
 
 Phase 5 is complete. Phase 6 is the v0.1.1 file I/O and batch feature phase. Product fixes remain unauthorized; historical Phase 5 references to “Phase 6” meant the then-planned product-fix phase. The Build Week showcase package remains unpublished; publication still requires separate Owner authorization.
 

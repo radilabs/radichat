@@ -208,6 +208,74 @@ func TestBinaryMissingTokenNoNetwork(t *testing.T) {
 	}
 }
 
+func TestRedactJSONLOmitsSentinel(t *testing.T) {
+	t.Setenv("RADICHAT_PHASE2_TEST_TOKEN", phase2Sentinel)
+	t.Run("stream", func(t *testing.T) {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "text/event-stream")
+			io.WriteString(w, "data: {\"choices\":[{\"delta\":{\"content\":\""+phase2Sentinel+"\"},\"finish_reason\":\"stop\"}]}\n\n")
+			io.WriteString(w, "data: [DONE]\n\n")
+		}))
+		t.Cleanup(func() {
+			srv.CloseClientConnections()
+			srv.Close()
+		})
+		dir := t.TempDir()
+		cfgPath := filepath.Join(dir, "radichat.json")
+		writeAuthCfgAt(t, cfgPath, srv.URL+"/v1/chat/completions", "RADICHAT_PHASE2_TEST_TOKEN")
+		outPath := filepath.Join(dir, "out.jsonl")
+		var stdout, stderr bytes.Buffer
+		code := run(context.Background(), []string{"radichat", "-config", cfgPath, "-output", outPath}, strings.NewReader("ping\n"), &stdout, &stderr)
+		if code != 0 {
+			t.Fatalf("exit %d stderr %s", code, stderr.String())
+		}
+		raw, err := os.ReadFile(outPath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, part := range []string{string(raw), stdout.String(), stderr.String()} {
+			if strings.Contains(part, phase2Sentinel) {
+				t.Fatalf("sentinel leaked: %q", part)
+			}
+		}
+		if !strings.Contains(string(raw), "[redacted]") {
+			t.Fatalf("jsonl %s", raw)
+		}
+	})
+	t.Run("http error", func(t *testing.T) {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "text/plain")
+			w.WriteHeader(http.StatusUnauthorized)
+			io.WriteString(w, "echo-token="+phase2Sentinel)
+		}))
+		t.Cleanup(func() {
+			srv.CloseClientConnections()
+			srv.Close()
+		})
+		dir := t.TempDir()
+		cfgPath := filepath.Join(dir, "radichat.json")
+		writeAuthCfgAt(t, cfgPath, srv.URL+"/v1/chat/completions", "RADICHAT_PHASE2_TEST_TOKEN")
+		outPath := filepath.Join(dir, "out.jsonl")
+		var stdout, stderr bytes.Buffer
+		code := run(context.Background(), []string{"radichat", "-config", cfgPath, "-output", outPath}, strings.NewReader("ping\n/quit\n"), &stdout, &stderr)
+		if code != 0 {
+			t.Fatalf("exit %d stderr %s", code, stderr.String())
+		}
+		raw, err := os.ReadFile(outPath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, part := range []string{string(raw), stdout.String(), stderr.String()} {
+			if strings.Contains(part, phase2Sentinel) {
+				t.Fatalf("sentinel leaked: %q", part)
+			}
+		}
+		if !strings.Contains(string(raw), `"status":"error"`) || !strings.Contains(string(raw), `"sent":true`) {
+			t.Fatalf("jsonl %s", raw)
+		}
+	})
+}
+
 func TestRunHTTPFailureEchoesOmitFromStdio(t *testing.T) {
 	t.Setenv("RADICHAT_PHASE2_TEST_TOKEN", phase2Sentinel)
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

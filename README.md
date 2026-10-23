@@ -16,6 +16,7 @@ The project exists to keep the client side boring: one Go binary, one JSON file,
 - Multi-turn context held only in process memory.
 - Deterministic context-budget trimming for small model windows.
 - `/clear` to reset conversation history and `/quit` to exit.
+- Optional system-prompt file, `-input` for sequential file or FIFO turns, and opt-in JSONL results with `-output`.
 - Strict HTTPS verification, redirect refusal, no retries, and no proxy discovery.
 - One self-contained executable built with the Go standard library only.
 
@@ -143,7 +144,8 @@ RadiChat reads one strict JSON object. Unknown or duplicate fields fail at start
 | `model` | yes | Model name sent unchanged to the endpoint. |
 | `context_budget` | yes | Positive application working-budget units for request context. |
 | `generation_reserve` | yes | Positive completion reserve and `max_tokens`; must be smaller than the context budget. |
-| `system_prompt` | no | Fixed leading system message. |
+| `system_prompt` | no | Fixed leading system message. Mutually exclusive with `system_prompt_file`. |
+| `system_prompt_file` | no | UTF-8 file used as the system prompt. Relative paths resolve from the config file's directory. |
 | `bearer_token_env` | no | Name of the environment variable containing the bearer token. |
 
 See [Configuration](docs/configuration.md) for validation rules and [Context accounting](docs/context-accounting.md) for the deterministic byte-based budget policy.
@@ -154,7 +156,8 @@ See [Configuration](docs/configuration.md) for validation rules and [Context acc
 | --- | --- |
 | `/clear` | Clear in-memory user/assistant history while retaining the configured system prompt. |
 | `/quit` | Exit successfully. |
-| Ctrl-C | Cancel and discard an in-flight turn, then exit. |
+| Ctrl-C | Cancel and discard an in-flight turn, then exit 130. |
+| SIGTERM | Cancel and discard an in-flight turn, then exit 143. |
 | EOF | Exit after processing any final input line. |
 
 Blank lines are ignored. Unknown slash commands are rejected locally and are not sent to the model. See [CLI behavior](docs/cli.md) for streams, errors, and exit codes.
@@ -176,7 +179,7 @@ The exact behavior and limits are documented in [Protocol subset](docs/protocol.
 
 ## Context and privacy model
 
-Conversation history lives only in memory and disappears when the process exits. RadiChat writes no transcript, session database, credential file, or log. When a request would exceed `context_budget`, it drops the oldest complete user/assistant pairs while retaining the system prompt and current user message.
+Conversation history lives only in memory and disappears when the process exits. RadiChat writes no transcript, session database, credential file, or log unless `-output` is set. That JSONL file records completed turns for the run and is not reloaded. When a request would exceed `context_budget`, it drops the oldest complete user/assistant pairs while retaining the system prompt and current user message. Earlier JSONL records stay in the output. A non-empty system prompt is checked against the same budget before the first request.
 
 Bearer tokens live in process memory after startup. The authenticated path omits untrusted response bodies, redirect destinations, and underlying transport text from diagnostics, and filters exact credential echoes from streamed output. Process environments are not encrypted and may still be visible to the same user or system administrator.
 
@@ -204,7 +207,7 @@ High-level roadmap:
 - Phase 0 — repository and product contracts: accepted.
 - Phase 1 — unauthenticated local chat core: accepted.
 - Phase 2 — optional bearer authentication: accepted.
-- Later capabilities require an explicit new phase; none is currently authorized.
+- Stage 4 / Phase 6 adds file prompts, file input, and opt-in JSONL results in the working tree. It is not a release. Owner acceptance is required before any tag or image publication. The Kubernetes example is documentation only and uses the placeholder digest `REPLACE_WITH_V0_1_1_DIGEST`.
 
 ## Documentation
 
@@ -212,6 +215,8 @@ High-level roadmap:
 - [Protocol subset](docs/protocol.md)
 - [Context accounting](docs/context-accounting.md)
 - [CLI behavior](docs/cli.md)
+- [Batch input and JSONL results](docs/batch.md)
+- [Kubernetes Job example](docs/kubernetes.md)
 - [Container image](docs/container.md)
 - [Accepted Phase 2 handoff](docs/handoffs/phase-2.md)
 - [Product direction](PROJECT.md)

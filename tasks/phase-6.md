@@ -1,6 +1,6 @@
 # Stage 4 / Phase 6 — v0.1.1 File I/O and Batch Support
 
-**Status:** Authorized; implementation has not started. Waiting for Owner review of the detailed implementation plan.
+**Status:** Corrected candidate has fresh independent Watcher PASS. Owner-authorized review-checkpoint commit and push are in progress; Phase 6 acceptance remains pending Owner inspection.
 
 **Authorization:** Owner approved design commit `334e9710efeab981782870df4bc0e050ef195be7` and authorized Stage 4 / Phase 6 on 2026-10-23.
 
@@ -42,9 +42,37 @@ Record actual command and result for each:
 | 2026-10-23 | Phase authorized | Owner-approved design commit `334e9710efeab981782870df4bc0e050ef195be7`; Owner message authorizes implementation and Watcher verification. |
 | 2026-10-23 | Architect review | Existing Architect thread reports no remaining design blockers after three bounded review passes. |
 | 2026-10-23 | Initial candidate state | Baseline `334e9710efeab981782870df4bc0e050ef195be7`; working tree clean before phase-contract materialization. |
-| — | Candidate freeze | Pending implementation completion. |
-| — | Watcher | Pending; must record explicit PASS/FAIL and candidate identity. |
-| — | Owner acceptance | Pending. |
+| 2026-10-23 | Plan approved | Owner approved the contract, task file, and seven-task plan at commit `67a573944d9d87313a7aef064e295afda93bbe92`; authorized execution of Tasks 1–7. |
+| 2026-10-23 | Coder transport | Existing Coder thread `46c38865-da1d-4849-a2da-65f754043115`, run `run:thread:46c38865-da1d-4849-a2da-65f754043115:ordinal:6`, remained `starting` with `startedAt: null`; bounded wait and recovery did not start a provider turn. `steer` and `restart` returned `thread_not_sendable`. No implementation edits were made. CAO reports no active sessions and has no Phase 6 Coder profile. |
+| 2026-10-23 | Coder resumed | Existing Coder thread started run `run:thread:46c38865-da1d-4849-a2da-65f754043115:ordinal:8` through the Cursor provider using `grok-4.7` at 19:40:25 UTC; implementation is now in progress. |
+| 2026-10-23 | Candidate freeze | Baseline `67a573944d9d87313a7aef064e295afda93bbe92`. Uncommitted content identity `feab677ce5470af044bcc89bc9905ba82919712076e72c5e8b75796ab66c2ca3` (recipe: SHA-256 of `baseline <HEAD>\n`, raw `git diff HEAD -- . ':!TASKS.md' ':!tasks/phase-6.md'`, then for each NUL-delimited untracked path from `git ls-files --others --exclude-standard -z`, path + LF + lowercase hex SHA-256 of its bytes + LF). Task file and `TASKS.md` are excluded. Driver independently recomputed the digest. No commit. |
+| 2026-10-23 | `gofmt -l .` | No paths printed. |
+| 2026-10-23 | `go test ./... -count=1 -timeout 300s` | Pass. Packages: root 15.978s, `cmd/radichat-mock` 1.879s, `examples/kubernetes` 0.002s, `internal/chat` 0.004s, `internal/client` 4.283s, `internal/config` 0.017s, `internal/mockllm` 0.019s, `internal/repl` 0.116s. `internal/discovery` has no test files. |
+| 2026-10-23 | `go test -race ./... -count=1 -timeout 300s` | Pass. Packages: root 17.002s, `cmd/radichat-mock` 2.893s, `examples/kubernetes` 1.022s, `internal/chat` 1.039s, `internal/client` 5.405s, `internal/config` 1.074s, `internal/mockllm` 1.073s, `internal/repl` 1.160s. |
+| 2026-10-23 | `go vet ./...` | Pass. |
+| 2026-10-23 | `go build ./...` | Pass. |
+| 2026-10-23 | `go run . -help` | Exit 0. Usage lists `-config`, `-input`, `-output`, and `./-`. |
+| 2026-10-23 | Kubernetes JSON | `go test ./examples/kubernetes -count=1` pass. Replacing `system_prompt_file` with `/config/missing.txt` failed the test on the prompt path; the manifest was restored and the test passed. No cluster or image run. |
+| 2026-10-23 | `git diff --check` | Pass. |
+| 2026-10-23 | `sh .factory/check-public-surface.sh` | Pass. No configured Factory runtime paths are tracked. |
+| 2026-10-23 | Scope inspection | `go.mod` and `go.sum` unchanged. No new dependency. `internal/chat` has no file I/O. Decision 0001 was not edited. Phase 0–5 task, handoff, and testing evidence files were not modified. |
+| 2026-10-23 | Watcher PASS | Existing Watcher thread `c735bfd9-75d3-42a9-9927-82e1dc9a97aa`, run `run:thread:c735bfd9-75d3-42a9-9927-82e1dc9a97aa:ordinal:8`, independently recomputed content identity `feab677ce5470af044bcc89bc9905ba82919712076e72c5e8b75796ab66c2ca3` and returned PASS on AC1–AC11. Report: `.factory/reports/stage-4-phase-6-watcher-01.md` (ignored runtime evidence). Re-run all required gates and independently inspected contract-derived cases. |
+| 2026-10-23 | Dr Watson review | No blocking risks; no files changed. Two low residuals assessed as nonblocking and recorded below. |
+| 2026-10-23 | Owner correction | Owner authorized a bounded example correction: HTTPS when `bearer_token_env` is set, `automountServiceAccountToken: false` on the Job Pod spec, and no FIFO/SIGTERM implementation change. Product code was not edited. |
+| 2026-10-23 | Correction tests | Before the manifest edits, `go test ./examples/kubernetes` failed at `automountServiceAccountToken <nil>`, then, after that field was set, failed on endpoint `http://llm.default.svc.cluster.local/v1/chat/completions`. After the HTTPS edit, `TestKubernetesManifests` passed. No cluster or image run. |
+| 2026-10-23 | Corrected candidate | Baseline `67a573944d9d87313a7aef064e295afda93bbe92`. Content identity `7400ede49b71e846a86771ea950eba4da7206a4752c30957191460a5062e3a8b`. Same recipe as the prior freeze. This task file and `TASKS.md` are excluded. No commit. |
+| 2026-10-23 | `gofmt -l .` (rerun) | No paths printed. |
+| 2026-10-23 | `go test ./... -count=1 -timeout 300s` (rerun) | Pass. Packages: root 15.968s, `cmd/radichat-mock` 1.836s, `examples/kubernetes` 0.004s, `internal/chat` 0.006s, `internal/client` 4.278s, `internal/config` 0.014s, `internal/mockllm` 0.020s, `internal/repl` 0.115s. `internal/discovery` has no test files. |
+| 2026-10-23 | `go test -race ./... -count=1 -timeout 300s` (rerun) | Pass. Packages: root 16.991s, `cmd/radichat-mock` 2.869s, `examples/kubernetes` 1.017s, `internal/chat` 1.036s, `internal/client` 5.403s, `internal/config` 1.071s, `internal/mockllm` 1.066s, `internal/repl` 1.153s. |
+| 2026-10-23 | `go vet ./...` (rerun) | Pass. |
+| 2026-10-23 | `go build ./...` (rerun) | Pass. |
+| 2026-10-23 | `go run . -help` (rerun) | Exit 0. Usage lists `-config`, `-input`, `-output`, and `./-`. |
+| 2026-10-23 | Kubernetes JSON (rerun) | `go test ./examples/kubernetes -count=1 -v` pass (`TestKubernetesManifests` 0.00s). Assertions require `https://` when `bearer_token_env` is set and `automountServiceAccountToken` false, and still check mount paths and embedded config. No cluster or image run. |
+| 2026-10-23 | `git diff --check` (rerun) | Pass. |
+| 2026-10-23 | `sh .factory/check-public-surface.sh` (rerun) | Pass. No configured Factory runtime paths are tracked. |
+| 2026-10-23 | Correction scope | This correction changed `examples/kubernetes/configmap.json`, `examples/kubernetes/job.json`, `examples/kubernetes/kubernetes_test.go`, and `docs/kubernetes.md`. No RadiChat product source was edited for the correction. |
+| 2026-10-23 | Fresh independent Watcher | PASS on corrected identity `7400ede49b71e846a86771ea950eba4da7206a4752c30957191460a5062e3a8b`, baseline `67a573944d9d87313a7aef064e295afda93bbe92`; report `.factory/reports/stage-4-phase-6-watcher-02.md` (ignored runtime artifact). Identity independently recomputed MATCH; all required checks passed. Verification only, not Owner acceptance. |
+| — | Owner acceptance | Pending Owner and ChatGPT inspection after review-checkpoint push. |
 
 ## Known limits and deferred work
 
@@ -52,14 +80,28 @@ Record actual command and result for each:
 - Broken stdout pipe behavior follows Go/Unix SIGPIPE defaults; no custom SIGPIPE conversion is in scope.
 - Product fixes, session persistence/reload, database, concurrency, retries, scheduling/orchestration, Kubernetes client code, and release/publication are excluded.
 - No real image digest exists for v0.1.1; examples must visibly mark the placeholder.
-- Additional deferred items: none recorded yet.
+- Non-blocking risk for Owner review: SIGTERM cannot cancel a process blocked opening an input FIFO; it exits 143 only after a writer connects and control reaches the REPL. The Kubernetes example uses a regular input file. No implementation change was made for this limitation.
+- The example endpoint is `https://llm.default.svc.cluster.local/v1/chat/completions` because bearer-token auth is configured. TLS certificate provisioning is an operator prerequisite. The bearer-token-over-HTTP observation is resolved for this example. No cluster was contacted.
+- The example Job sets `automountServiceAccountToken: false` on `spec.template.spec`. No cluster was contacted to observe that setting.
+- The candidate is uncommitted. Identity above excludes this task file and `TASKS.md` so recording the hash does not change it.
+- `TestRecordSurvivesTrimAndClear` proves trimming with `trimmed_pairs` and the stderr notice. Under budget 180 the staged request stays at 2 messages, so message-count shrinkage is not the signal.
+- `TestJSONLInterruptRecordOmitsPartial` releases the mock handler before server close. Exit 130 was observed and the JSONL record did not contain the partial assistant text.
+- SIGPIPE behavior was not given a custom test; it remains the Go/Unix default.
 
 ## Handoff state
 
-Implementation: not started.
+Implementation: corrected candidate frozen for Driver review. Tasks 1–7 of `docs/superpowers/plans/2026-10-23-v011-file-io-batch.md` remain implemented. The Owner correction changes the Kubernetes example only.
 
-Independent Watcher: not started.
+Changed surfaces: config prompt-file loading, startup fit, `-input`, `-output`, REPL line reader and JSONL records, additive `StreamResult`, SIGINT 130 and SIGTERM 143, docs, decision 0003, and `examples/kubernetes`.
 
-Owner acceptance: pending.
+Runtime report: `.factory/reports/stage-4-phase-6-coder-evidence.md` (ignored).
 
-Do not merge, tag, release, or publish without separate Owner authorization. Stop for Owner acceptance after independent Watcher PASS.
+Independent Watcher: PASS on the previous identity `feab677ce5470af044bcc89bc9905ba82919712076e72c5e8b75796ab66c2ca3` only; report `.factory/reports/stage-4-phase-6-watcher-01.md` (ignored runtime artifact). That PASS does not cover the corrected candidate.
+
+Corrected content identity: `7400ede49b71e846a86771ea950eba4da7206a4752c30957191460a5062e3a8b`.
+
+Fresh independent Watcher: PASS on corrected identity `7400ede49b71e846a86771ea950eba4da7206a4752c30957191460a5062e3a8b`; report `.factory/reports/stage-4-phase-6-watcher-02.md` (ignored runtime artifact).
+
+Review checkpoint: Owner-authorized commit and push to `main` are in progress. Phase 6 acceptance remains pending Owner inspection.
+
+Do not merge, tag, release, or publish without separate Owner authorization.

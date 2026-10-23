@@ -20,6 +20,280 @@ import (
 	"github.com/radilabs/radichat/internal/config"
 )
 
+func TestPromptFitStartup(t *testing.T) {
+	const (
+		budget  = int64(200)
+		reserve = int64(10)
+	)
+	// system + empty user + reserve: 32 + (len+32) + 32 + reserve <= budget.
+	exact := strings.Repeat("p", int(budget-reserve-96))
+	over := exact + "Q"
+
+	t.Run("no prompt", func(t *testing.T) {
+		assertPromptFit(t, budget, reserve, "", "", "/quit\n", 0, 0, "")
+	})
+	t.Run("empty inline", func(t *testing.T) {
+		assertPromptFit(t, 100, 10, "", "empty", "/quit\n", 0, 0, "")
+	})
+	t.Run("inline exact", func(t *testing.T) {
+		assertPromptFit(t, budget, reserve, exact, "inline", "/quit\n", 0, 0, "")
+	})
+	t.Run("inline over", func(t *testing.T) {
+		assertPromptFit(t, budget, reserve, over, "inline", "/quit\n", 1, 0, "system prompt does not fit")
+	})
+	t.Run("file exact", func(t *testing.T) {
+		assertPromptFit(t, budget, reserve, exact, "file", "/quit\n", 0, 0, "")
+	})
+	t.Run("file over", func(t *testing.T) {
+		assertPromptFit(t, budget, reserve, over, "file", "/quit\n", 1, 0, "system prompt does not fit")
+	})
+}
+
+func assertPromptFit(t *testing.T, budget, reserve int64, prompt, mode, input string, wantCode, wantHits int, wantErr string) {
+	t.Helper()
+	hits := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hits++
+		w.Header().Set("Content-Type", "text/event-stream")
+		io.WriteString(w, "data: {\"choices\":[{\"delta\":{\"content\":\"x\"},\"finish_reason\":\"stop\"}]}\n\n")
+		io.WriteString(w, "data: [DONE]\n\n")
+	}))
+	t.Cleanup(func() {
+		srv.CloseClientConnections()
+		srv.Close()
+	})
+	dir := t.TempDir()
+	cfgPath := filepath.Join(dir, "radichat.json")
+	switch mode {
+	case "", "inline":
+		cfg := map[string]any{
+			"endpoint":           srv.URL + "/v1/chat/completions",
+			"model":              "m",
+			"context_budget":     budget,
+			"generation_reserve": reserve,
+		}
+		if mode == "inline" {
+			cfg["system_prompt"] = prompt
+		}
+		raw, err := json.Marshal(cfg)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(cfgPath, raw, 0o600); err != nil {
+			t.Fatal(err)
+		}
+	case "empty":
+		raw := fmt.Sprintf(`{"endpoint":%q,"model":"m","context_budget":%d,"generation_reserve":%d,"system_prompt":""}`, srv.URL+"/v1/chat/completions", budget, reserve)
+		if err := os.WriteFile(cfgPath, []byte(raw), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	case "file":
+		if err := os.WriteFile(filepath.Join(dir, "prompt.txt"), []byte(prompt), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		raw := fmt.Sprintf(`{"endpoint":%q,"model":"m","context_budget":%d,"generation_reserve":%d,"system_prompt_file":"prompt.txt"}`, srv.URL+"/v1/chat/completions", budget, reserve)
+		if err := os.WriteFile(cfgPath, []byte(raw), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	default:
+		t.Fatalf("mode %q", mode)
+	}
+	var out, errb bytes.Buffer
+	code := run(context.Background(), []string{"radichat", "-config", cfgPath}, strings.NewReader(input), &out, &errb)
+	if code != wantCode {
+		t.Fatalf("exit %d want %d stderr %q stdout %q", code, wantCode, errb.String(), out.String())
+	}
+	if hits != wantHits {
+		t.Fatalf("requests %d want %d", hits, wantHits)
+	}
+	if wantErr != "" && !strings.Contains(errb.String(), wantErr) {
+		t.Fatalf("stderr %q does not contain %q", errb.String(), wantErr)
+	}
+	if prompt != "" && strings.Contains(errb.String(), prompt) {
+		t.Fatalf("stderr leaked prompt: %q", errb.String())
+	}
+	if prompt != "" && strings.Contains(out.String(), prompt) {
+		t.Fatalf("stdout leaked prompt: %q", out.String())
+	}
+}
+
+func TestHelpListsInput(t *testing.T) {
+	var out, errb bytes.Buffer
+	code := run(context.Background(), []string{"radichat", "-help"}, strings.NewReader(""), &out, &errb)
+	if code != 0 {
+		t.Fatalf("exit %d stderr %s", code, errb.String())
+	}
+	if !strings.Contains(out.String(), "-input") {
+		t.Fatalf("help %q", out.String())
+	}
+	if !strings.Contains(out.String(), "./-") && !strings.Contains(out.String(), "named -") {
+		t.Fatalf("help should say a file named - is ./-: %q", out.String())
+	}
+}
+
+func TestCLIInputFile(t *testing.T) {
+	var got []string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]any
+		_ = json.NewDecoder(r.Body).Decode(&body)
+		got = append(got, lastContent(msgs(body)))
+		w.Header().Set("Content-Type", "text/event-stream")
+		io.WriteString(w, "data: {\"choices\":[{\"delta\":{\"content\":\"pong\"},\"finish_reason\":\"stop\"}]}\n\n")
+		io.WriteString(w, "data: [DONE]\n\n")
+	}))
+	t.Cleanup(func() {
+		srv.CloseClientConnections()
+		srv.Close()
+	})
+	dir := t.TempDir()
+	cfgPath := filepath.Join(dir, "radichat.json")
+	writeCfgAt(t, cfgPath, srv.URL+"/v1/chat/completions", 400, 40, "")
+	inputPath := filepath.Join(dir, "in.txt")
+	if err := os.WriteFile(inputPath, []byte("from-file\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	devnull, err := os.OpenFile("/dev/null", os.O_WRONLY, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { devnull.Close() })
+	var errb bytes.Buffer
+	code := run(context.Background(), []string{"radichat", "-config", cfgPath, "-input", inputPath}, strings.NewReader("from-stdin\n"), devnull, &errb)
+	if code != 0 {
+		t.Fatalf("exit %d stderr %s", code, errb.String())
+	}
+	if strings.Contains(errb.String(), "> ") {
+		t.Fatalf("file input prompted: %q", errb.String())
+	}
+	if len(got) != 1 || got[0] != "from-file" {
+		t.Fatalf("requests %v", got)
+	}
+}
+
+func TestCLIInputMissingAndDirectory(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t.Error("request issued")
+	}))
+	t.Cleanup(func() {
+		srv.CloseClientConnections()
+		srv.Close()
+	})
+	dir := t.TempDir()
+	cfgPath := filepath.Join(dir, "radichat.json")
+	writeCfgAt(t, cfgPath, srv.URL+"/v1/chat/completions", 400, 40, "")
+	outPath := filepath.Join(dir, "out.jsonl")
+
+	t.Run("missing", func(t *testing.T) {
+		var out, errb bytes.Buffer
+		code := run(context.Background(), []string{"radichat", "-config", cfgPath, "-input", filepath.Join(dir, "missing.txt"), "-output", outPath}, strings.NewReader("hi\n"), &out, &errb)
+		if code != 1 {
+			t.Fatalf("exit %d stderr %q", code, errb.String())
+		}
+		if !strings.Contains(errb.String(), "not found") {
+			t.Fatalf("stderr %q", errb.String())
+		}
+		if _, err := os.Stat(outPath); !os.IsNotExist(err) {
+			t.Fatalf("output created: %v", err)
+		}
+	})
+	t.Run("directory", func(t *testing.T) {
+		var out, errb bytes.Buffer
+		code := run(context.Background(), []string{"radichat", "-config", cfgPath, "-input", dir, "-output", outPath}, strings.NewReader("hi\n"), &out, &errb)
+		if code != 1 {
+			t.Fatalf("exit %d stderr %q", code, errb.String())
+		}
+		if !strings.Contains(errb.String(), "directory") {
+			t.Fatalf("stderr %q", errb.String())
+		}
+		if _, err := os.Stat(outPath); !os.IsNotExist(err) {
+			t.Fatalf("output created: %v", err)
+		}
+	})
+}
+
+func TestCLIInputDashIsLocalFile(t *testing.T) {
+	var got []string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]any
+		_ = json.NewDecoder(r.Body).Decode(&body)
+		got = append(got, lastContent(msgs(body)))
+		w.Header().Set("Content-Type", "text/event-stream")
+		io.WriteString(w, "data: {\"choices\":[{\"delta\":{\"content\":\"ok\"},\"finish_reason\":\"stop\"}]}\n\n")
+		io.WriteString(w, "data: [DONE]\n\n")
+	}))
+	t.Cleanup(func() {
+		srv.CloseClientConnections()
+		srv.Close()
+	})
+	dir := t.TempDir()
+	cfgPath := filepath.Join(dir, "radichat.json")
+	writeCfgAt(t, cfgPath, srv.URL+"/v1/chat/completions", 400, 40, "")
+	if err := os.WriteFile(filepath.Join(dir, "-"), []byte("dash-file\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chdir(dir); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chdir(wd) })
+	var out, errb bytes.Buffer
+	code := run(context.Background(), []string{"radichat", "-config", cfgPath, "-input", "-"}, strings.NewReader("from-stdin\n"), &out, &errb)
+	if code != 0 {
+		t.Fatalf("exit %d stderr %s stdout %s", code, errb.String(), out.String())
+	}
+	if len(got) != 1 || got[0] != "dash-file" {
+		t.Fatalf("requests %v stdout %q", got, out.String())
+	}
+}
+
+func TestCLIInputFIFO(t *testing.T) {
+	var got []string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]any
+		_ = json.NewDecoder(r.Body).Decode(&body)
+		got = append(got, lastContent(msgs(body)))
+		w.Header().Set("Content-Type", "text/event-stream")
+		io.WriteString(w, "data: {\"choices\":[{\"delta\":{\"content\":\"ok\"},\"finish_reason\":\"stop\"}]}\n\n")
+		io.WriteString(w, "data: [DONE]\n\n")
+	}))
+	t.Cleanup(func() {
+		srv.CloseClientConnections()
+		srv.Close()
+	})
+	dir := t.TempDir()
+	cfgPath := filepath.Join(dir, "radichat.json")
+	writeCfgAt(t, cfgPath, srv.URL+"/v1/chat/completions", 400, 40, "")
+	fifo := filepath.Join(dir, "in.fifo")
+	if err := syscall.Mkfifo(fifo, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	errc := make(chan error, 1)
+	go func() {
+		f, err := os.OpenFile(fifo, os.O_WRONLY, 0)
+		if err != nil {
+			errc <- err
+			return
+		}
+		defer f.Close()
+		_, err = io.WriteString(f, "fifo-line\n")
+		errc <- err
+	}()
+	var out, errb bytes.Buffer
+	code := run(context.Background(), []string{"radichat", "-config", cfgPath, "-input", fifo}, strings.NewReader(""), &out, &errb)
+	if code != 0 {
+		t.Fatalf("exit %d stderr %s stdout %s", code, errb.String(), out.String())
+	}
+	if err := <-errc; err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 1 || got[0] != "fifo-line" {
+		t.Fatalf("requests %v stdout %q", got, out.String())
+	}
+}
+
 func TestHelp(t *testing.T) {
 	var out, errb bytes.Buffer
 	code := run(context.Background(), []string{"radichat", "-help"}, strings.NewReader(""), &out, &errb)

@@ -34,6 +34,10 @@ The model server owns inference. RadiChat does not attempt to become an agent ha
 * Phase 1 assumes no authentication;
 * Phase 2 adds optional endpoint authentication.
 
+### v0.1.1 file and batch I/O
+
+* Load a system prompt from a file, read sequential turns from `-input`, and write opt-in JSONL results with `-output`, including a documentation-only Kubernetes Job example.
+
 ## Design Direction
 
 Boring on purpose.

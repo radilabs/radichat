@@ -1,0 +1,15 @@
+{
+  "apiVersion": "v1",
+  "kind": "ConfigMap",
+  "metadata": {
+    "name": "radichat-batch",
+    "labels": {
+      "app": "radichat"
+    }
+  },
+  "data": {
+    "radichat.json": "{\n  \"endpoint\": \"https://llm.default.svc.cluster.local/v1/chat/completions\",\n  \"model\": \"local-model\",\n  \"context_budget\": 8192,\n  \"generation_reserve\": 1024,\n  \"system_prompt_file\": \"/config/system-prompt.txt\",\n  \"bearer_token_env\": \"RADICHAT_BEARER_TOKEN\"\n}\n",
+    "system-prompt.txt": "You are a concise assistant.\n",
+    "input.txt": "hello\n"
+  }
+}

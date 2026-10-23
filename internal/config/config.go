@@ -8,14 +8,16 @@ import (
 	"io"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 const (
 	DefaultPath   = "radichat.json"
 	MaxFileBytes  = 1 << 20
-	allowedFields = "endpoint, model, context_budget, generation_reserve, system_prompt, bearer_token_env"
+	allowedFields = "endpoint, model, context_budget, generation_reserve, system_prompt, system_prompt_file, bearer_token_env"
 	maxEnvName    = 256
 	maxTokenBytes = 8 << 10
 )
@@ -27,6 +29,7 @@ type Config struct {
 	ContextBudget     int64
 	GenerationReserve int64
 	SystemPrompt      string
+	SystemPromptFile  string
 	Path              string
 	BearerTokenEnv    string
 	BearerToken       string
@@ -38,6 +41,7 @@ type fileConfig struct {
 	ContextBudget     json.RawMessage `json:"context_budget"`
 	GenerationReserve json.RawMessage `json:"generation_reserve"`
 	SystemPrompt      json.RawMessage `json:"system_prompt"`
+	SystemPromptFile  json.RawMessage `json:"system_prompt_file"`
 	BearerTokenEnv    json.RawMessage `json:"bearer_token_env"`
 }
 
@@ -73,7 +77,19 @@ func Load(path string) (Config, error) {
 	if int64(len(data)) > MaxFileBytes {
 		return Config{}, fmt.Errorf("config file %q exceeds the %d-byte limit; reduce the file size", path, MaxFileBytes)
 	}
-	return Parse(path, data)
+	cfg, err := Parse(path, data)
+	if err != nil {
+		return Config{}, err
+	}
+	if cfg.SystemPromptFile == "" {
+		return cfg, nil
+	}
+	text, err := readSystemPromptFile(path, cfg.SystemPromptFile)
+	if err != nil {
+		return Config{}, err
+	}
+	cfg.SystemPrompt = text
+	return cfg, nil
 }
 
 // Parse validates JSON config bytes. path is used only in error messages.
@@ -118,8 +134,17 @@ func Parse(path string, data []byte) (Config, error) {
 	if cfg.GenerationReserve >= cfg.ContextBudget {
 		return Config{}, fmt.Errorf("generation_reserve must be smaller than context_budget; lower generation_reserve or raise context_budget")
 	}
+	if raw.SystemPrompt != nil && raw.SystemPromptFile != nil {
+		return Config{}, fmt.Errorf("system_prompt and system_prompt_file conflict; set only one")
+	}
 	if raw.SystemPrompt != nil {
 		cfg.SystemPrompt, err = parseOptionalString(raw.SystemPrompt, "system_prompt")
+		if err != nil {
+			return Config{}, err
+		}
+	}
+	if raw.SystemPromptFile != nil {
+		cfg.SystemPromptFile, err = parseRequiredString(raw.SystemPromptFile, "system_prompt_file")
 		if err != nil {
 			return Config{}, err
 		}
@@ -137,6 +162,54 @@ func Parse(path string, data []byte) (Config, error) {
 		return Config{}, err
 	}
 	return cfg, nil
+}
+
+func readSystemPromptFile(configPath, promptPath string) (string, error) {
+	resolved := promptPath
+	if !filepath.IsAbs(promptPath) {
+		resolved = filepath.Join(filepath.Dir(configPath), promptPath)
+	}
+	info, err := os.Stat(resolved)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return "", fmt.Errorf("system prompt file %q not found", resolved)
+		}
+		return "", fmt.Errorf("cannot read system prompt file %q: %w", resolved, err)
+	}
+	if info.IsDir() {
+		return "", fmt.Errorf("system prompt file %q is a directory", resolved)
+	}
+	if !info.Mode().IsRegular() {
+		return "", fmt.Errorf("system prompt file %q is not a regular file", resolved)
+	}
+	if info.Size() > MaxFileBytes {
+		return "", fmt.Errorf("system prompt file %q exceeds the %d-byte limit", resolved, MaxFileBytes)
+	}
+	f, err := os.Open(resolved)
+	if err != nil {
+		return "", fmt.Errorf("cannot read system prompt file %q: %w", resolved, err)
+	}
+	defer f.Close()
+	data, err := io.ReadAll(io.LimitReader(f, MaxFileBytes+1))
+	if err != nil {
+		return "", fmt.Errorf("cannot read system prompt file %q: %w", resolved, err)
+	}
+	if int64(len(data)) > MaxFileBytes {
+		return "", fmt.Errorf("system prompt file %q exceeds the %d-byte limit", resolved, MaxFileBytes)
+	}
+	if !utf8.Valid(data) {
+		return "", fmt.Errorf("system prompt file %q is not valid UTF-8", resolved)
+	}
+	data = bytes.TrimPrefix(data, []byte{0xEF, 0xBB, 0xBF})
+	if bytes.HasSuffix(data, []byte("\r\n")) {
+		data = data[:len(data)-2]
+	} else if bytes.HasSuffix(data, []byte("\n")) {
+		data = data[:len(data)-1]
+	}
+	if len(data) == 0 {
+		return "", fmt.Errorf("system prompt file %q is empty", resolved)
+	}
+	return string(data), nil
 }
 
 func parseRequiredString(raw json.RawMessage, name string) (string, error) {

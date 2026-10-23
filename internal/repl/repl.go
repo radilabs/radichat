@@ -1,7 +1,6 @@
 package repl
 
 import (
-	"bufio"
 	"context"
 	"errors"
 	"fmt"
@@ -15,28 +14,46 @@ import (
 )
 
 const (
-	ExitOK        = 0
-	ExitError     = 1
-	ExitInterrupt = 130
-	minInputBound = 4096
-	prompt        = "> "
+	ExitOK         = 0
+	ExitError      = 1
+	ExitInterrupt  = 130
+	ExitTerminated = 143
+	minInputBound  = 4096
+	prompt         = "> "
 )
 
+// Options selects optional JSONL recording. A nil Records writer keeps the
+// existing terminal-only behavior.
+type Options struct {
+	Client      *client.Client
+	Records     RecordWriter
+	JSONLStdout bool
+}
+
 func Run(ctx context.Context, cfg config.Config, in io.Reader, out, errw io.Writer) int {
-	return run(ctx, cfg, in, out, errw, nil)
+	return RunWithOptions(ctx, cfg, in, out, errw, Options{})
+}
+
+func RunWithOptions(ctx context.Context, cfg config.Config, in io.Reader, out, errw io.Writer, opt Options) int {
+	return runOpts(ctx, cfg, in, out, errw, opt)
 }
 
 func run(ctx context.Context, cfg config.Config, in io.Reader, out, errw io.Writer, cl *client.Client) int {
+	return runOpts(ctx, cfg, in, out, errw, Options{Client: cl})
+}
+
+func runOpts(ctx context.Context, cfg config.Config, in io.Reader, out, errw io.Writer, opt Options) int {
+	cl := opt.Client
 	if cl == nil {
 		cl = client.New(cfg, client.Options{})
 	}
 	conv := chat.New(cfg.ContextBudget, cfg.GenerationReserve, cfg.SystemPrompt)
 	interactive := isTTY(in) && isTTY(out)
-	br := bufio.NewReader(in)
 	maxLine := cfg.ContextBudget
 	if maxLine < minInputBound {
 		maxLine = minInputBound
 	}
+	reader := newInputReader(in, maxLine)
 	failedTurn := false
 
 	for {
@@ -44,22 +61,26 @@ func run(ctx context.Context, cfg config.Config, in io.Reader, out, errw io.Writ
 			if conv.HasStaged() {
 				conv.Abort()
 			}
-			return ExitInterrupt
+			return interruptExit(ctx)
 		}
 		if interactive {
 			fmt.Fprint(errw, prompt)
 		}
-		line, err := readLine(ctx, br, maxLine)
+		got, err := reader.ReadLine(ctx)
+		line := got.Text
 		if errors.Is(err, errInterrupted) || errors.Is(err, context.Canceled) {
 			if conv.HasStaged() {
 				conv.Abort()
 			}
 			fmt.Fprintln(errw, "interrupted")
-			return ExitInterrupt
+			return interruptExit(ctx)
 		}
 		if errors.Is(err, errLineTooLong) {
 			fmt.Fprintf(errw, "input line exceeds %d bytes; shorten the message or raise context_budget\n", maxLine)
 			failedTurn = true
+			if err := opt.emit(Record{V: 1, Line: got.Number, Kind: "turn", Status: "error", Sent: boolPtr(false), Error: "line too long"}); err != nil {
+				return ExitError
+			}
 			continue
 		}
 		if err != nil && !errors.Is(err, io.EOF) {
@@ -67,7 +88,6 @@ func run(ctx context.Context, cfg config.Config, in io.Reader, out, errw io.Writ
 			return ExitError
 		}
 		eof := errors.Is(err, io.EOF)
-		line = strings.TrimRight(line, "\r")
 		if strings.TrimSpace(line) == "" {
 			if eof {
 				if failedTurn {
@@ -77,7 +97,7 @@ func run(ctx context.Context, cfg config.Config, in io.Reader, out, errw io.Writ
 			}
 			continue
 		}
-		if code, handled := handleCommand(line, conv, errw); handled {
+		if code, handled := handleCommand(line, conv, errw, opt, got.Number); handled {
 			if code >= 0 {
 				return code
 			}
@@ -92,6 +112,9 @@ func run(ctx context.Context, cfg config.Config, in io.Reader, out, errw io.Writ
 		if strings.HasPrefix(strings.TrimSpace(line), "/") {
 			fmt.Fprintf(errw, "unknown command %q; known commands are /clear and /quit\n", strings.TrimSpace(line))
 			failedTurn = true
+			if err := opt.emit(Record{V: 1, Line: got.Number, Kind: "command_error", Input: strPtr(line), Error: "unknown command"}); err != nil {
+				return ExitError
+			}
 			if eof {
 				return ExitError
 			}
@@ -102,6 +125,9 @@ func run(ctx context.Context, cfg config.Config, in io.Reader, out, errw io.Writ
 		if err != nil {
 			fmt.Fprintf(errw, "%s\n", err.Error())
 			failedTurn = true
+			if werr := opt.emit(Record{V: 1, Line: got.Number, Kind: "turn", Status: "error", Sent: boolPtr(false), Input: strPtr(line), Error: err.Error()}); werr != nil {
+				return ExitError
+			}
 			if eof {
 				return ExitError
 			}
@@ -111,32 +137,47 @@ func run(ctx context.Context, cfg config.Config, in io.Reader, out, errw io.Writ
 			fmt.Fprintf(errw, "dropped %d older turn(s) to stay within context_budget\n", trimmed)
 		}
 
-		text, streamErr := cl.Stream(ctx, msgs, conv.StreamLimit(), func(delta string) error {
-			if _, werr := io.WriteString(out, delta); werr != nil {
+		var onDelta func(string) error
+		if !opt.JSONLStdout {
+			onDelta = func(delta string) error {
+				_, werr := io.WriteString(out, delta)
 				return werr
 			}
-			return nil
-		})
-		if len(text) > 0 && !strings.HasSuffix(text, "\n") {
-			fmt.Fprintln(out)
-		} else if len(text) == 0 && streamErr == nil {
-			fmt.Fprintln(out)
+		}
+		res, streamErr := cl.StreamResult(ctx, msgs, conv.StreamLimit(), onDelta)
+		if !opt.JSONLStdout {
+			if len(res.Text) > 0 && !strings.HasSuffix(res.Text, "\n") {
+				fmt.Fprintln(out)
+			} else if len(res.Text) == 0 && streamErr == nil {
+				fmt.Fprintln(out)
+			}
 		}
 		if streamErr != nil {
 			conv.Abort()
 			if errors.Is(streamErr, context.Canceled) || errors.Is(streamErr, context.DeadlineExceeded) || ctx.Err() != nil {
 				fmt.Fprintln(errw, "interrupted; in-flight turn discarded")
-				return ExitInterrupt
+				_ = opt.emit(Record{V: 1, Line: got.Number, Kind: "turn", Status: "interrupted", Sent: boolPtr(res.RequestSent), Input: strPtr(line)})
+				return interruptExit(ctx)
 			}
 			fmt.Fprintf(errw, "%s\n", streamErr.Error())
 			failedTurn = true
+			if werr := opt.emit(Record{V: 1, Line: got.Number, Kind: "turn", Status: "error", Sent: boolPtr(res.RequestSent), Input: strPtr(line), Error: streamErr.Error()}); werr != nil {
+				return ExitError
+			}
 			if eof {
 				return ExitError
 			}
 			continue
 		}
-		if err := conv.Commit(text); err != nil {
+		if err := conv.Commit(res.Text); err != nil {
 			fmt.Fprintf(errw, "%s\n", err.Error())
+			return ExitError
+		}
+		if werr := opt.emit(Record{
+			V: 1, Line: got.Number, Kind: "turn", Status: "ok",
+			Input: strPtr(line), Output: strPtr(res.Text),
+			FinishReason: strPtr(res.FinishReason), TrimmedPairs: intPtr(trimmed),
+		}); werr != nil {
 			return ExitError
 		}
 		if eof {
@@ -148,74 +189,37 @@ func run(ctx context.Context, cfg config.Config, in io.Reader, out, errw io.Writ
 	}
 }
 
-func handleCommand(line string, conv *chat.Conversation, errw io.Writer) (exitCode int, handled bool) {
+func handleCommand(line string, conv *chat.Conversation, errw io.Writer, opt Options, lineNo int) (exitCode int, handled bool) {
 	cmd := strings.TrimSpace(line)
 	switch cmd {
 	case "/quit":
+		if err := opt.emit(Record{V: 1, Line: lineNo, Kind: "quit"}); err != nil {
+			return ExitError, true
+		}
 		return ExitOK, true
 	case "/clear":
 		conv.Clear()
 		fmt.Fprintln(errw, "conversation cleared")
+		if err := opt.emit(Record{V: 1, Line: lineNo, Kind: "clear"}); err != nil {
+			return ExitError, true
+		}
 		return -1, true
 	default:
 		return 0, false
 	}
 }
 
+func (opt Options) emit(rec Record) error {
+	if opt.Records == nil {
+		return nil
+	}
+	return opt.Records.WriteRecord(rec)
+}
+
 var (
 	errLineTooLong = errors.New("line too long")
 	errInterrupted = errors.New("interrupted")
 )
-
-func readLine(ctx context.Context, br *bufio.Reader, max int64) (string, error) {
-	type result struct {
-		line string
-		err  error
-	}
-	ch := make(chan result, 1)
-	go func() {
-		line, err := readBoundedLine(br, max)
-		ch <- result{line, err}
-	}()
-	select {
-	case <-ctx.Done():
-		return "", errInterrupted
-	case r := <-ch:
-		return r.line, r.err
-	}
-}
-
-func readBoundedLine(br *bufio.Reader, max int64) (string, error) {
-	var b []byte
-	for {
-		c, err := br.ReadByte()
-		if err != nil {
-			if errors.Is(err, io.EOF) {
-				if len(b) == 0 {
-					return "", io.EOF
-				}
-				return string(b), io.EOF
-			}
-			return "", err
-		}
-		if c == '\n' {
-			if len(b) > 0 && b[len(b)-1] == '\r' {
-				b = b[:len(b)-1]
-			}
-			return string(b), nil
-		}
-		if int64(len(b)) >= max {
-			for {
-				c2, err2 := br.ReadByte()
-				if err2 != nil || c2 == '\n' {
-					break
-				}
-			}
-			return "", errLineTooLong
-		}
-		b = append(b, c)
-	}
-}
 
 func isTTY(w interface{}) bool {
 	f, ok := w.(*os.File)

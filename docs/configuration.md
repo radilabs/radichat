@@ -14,7 +14,8 @@ Local unauthenticated use needs no environment variables. Optional bearer authen
 | `model` | yes | nonempty string | Model name placed in the JSON `model` field. |
 | `context_budget` | yes | positive integer | Application working-budget units for the whole request (see `docs/context-accounting.md`). |
 | `generation_reserve` | yes | positive integer, strictly smaller than `context_budget` | Reserved units for the completion; also sent as `max_tokens`. |
-| `system_prompt` | no | string | Optional. Omit the key, or set a JSON string. If the string is nonempty, it is sent as a fixed leading `system` message. JSON `null` and any other non-string value are rejected. |
+| `system_prompt` | no | string | Optional. Omit the key, or set a JSON string. If the string is nonempty, it is sent as a fixed leading `system` message. JSON `null` and any other non-string value are rejected. Mutually exclusive with `system_prompt_file`. |
+| `system_prompt_file` | no | nonempty string | Optional. Path of a UTF-8 file whose contents become the system prompt. Relative paths resolve against the directory of the config path as written. Absolute paths are used directly. Mutually exclusive with `system_prompt`, including when the inline value is empty. |
 | `bearer_token_env` | no | nonempty string | Optional. Omit the key for the zero-auth local path. When present, it must be a POSIX environment variable name (letters, digits, underscore; not starting with a digit). RadiChat reads that variable at startup. JSON `null` and any other non-string value are rejected. |
 
 Example (local, no authentication):
@@ -42,6 +43,14 @@ Optional authenticated mode names the environment variable only:
 ```
 
 Export the token in the process environment before starting RadiChat. Do not put the token in the JSON file, command line, or example configs.
+
+## System prompt file
+
+`system_prompt_file` is read once at startup by `Load`. `Parse` checks the string and the conflict with `system_prompt` but does not open the file.
+
+The file must be a regular file of at most 1 MiB after symlink resolution. FIFOs and directories are rejected. The bytes must be valid UTF-8. One leading UTF-8 BOM is removed, and one trailing LF or CRLF is removed. The result must be non-empty. A prompt that still does not fit `context_budget` with an empty user message and `generation_reserve` fails startup before any request. Errors include the path and the problem, not the prompt text.
+
+An omitted system prompt, or `"system_prompt": ""` without `system_prompt_file`, does not add that startup fit check.
 
 ## Endpoint URL rules
 
@@ -73,7 +82,9 @@ The process environment is not encrypted. Other processes running as the same us
 The process exits nonzero and prints a short diagnostic to stderr when:
 
 * the file is missing, unreadable, a directory, empty, or larger than 1 MiB;
-* JSON is malformed, contains duplicate keys, unknown keys, trailing values, or wrong types (including `system_prompt` or `bearer_token_env` set to `null` or any non-string);
+* JSON is malformed, contains duplicate keys, unknown keys, trailing values, or wrong types (including `system_prompt`, `system_prompt_file`, or `bearer_token_env` set to `null` or any non-string);
+* both `system_prompt` and `system_prompt_file` are present, or the prompt file is missing, not a regular file, too large, not UTF-8, or empty after the single BOM and newline strip;
+* a non-empty system prompt does not fit the context budget at startup;
 * budgets are missing, non-positive, non-integers, or `generation_reserve >= context_budget`;
 * the endpoint URL is unusable under the rules above;
 * `bearer_token_env` is present but the name is invalid, the variable is unset or empty, or the value cannot be sent as an HTTP header.

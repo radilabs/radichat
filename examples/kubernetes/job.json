@@ -1,0 +1,84 @@
+{
+  "apiVersion": "batch/v1",
+  "kind": "Job",
+  "metadata": {
+    "name": "radichat-batch",
+    "labels": {
+      "app": "radichat"
+    }
+  },
+  "spec": {
+    "backoffLimit": 0,
+    "activeDeadlineSeconds": 120,
+    "template": {
+      "metadata": {
+        "labels": {
+          "app": "radichat"
+        }
+      },
+      "spec": {
+        "automountServiceAccountToken": false,
+        "restartPolicy": "Never",
+        "securityContext": {
+          "runAsNonRoot": true,
+          "runAsUser": 65532,
+          "runAsGroup": 65532,
+          "seccompProfile": {
+            "type": "RuntimeDefault"
+          }
+        },
+        "containers": [
+          {
+            "name": "radichat",
+            "image": "ghcr.io/radilabs/radichat@sha256:REPLACE_WITH_V0_1_1_DIGEST",
+            "args": [
+              "-config",
+              "/config/radichat.json",
+              "-input",
+              "/config/input.txt",
+              "-output",
+              "-"
+            ],
+            "stdin": false,
+            "tty": false,
+            "env": [
+              {
+                "name": "RADICHAT_BEARER_TOKEN",
+                "valueFrom": {
+                  "secretKeyRef": {
+                    "name": "radichat-token",
+                    "key": "token"
+                  }
+                }
+              }
+            ],
+            "securityContext": {
+              "runAsNonRoot": true,
+              "runAsUser": 65532,
+              "readOnlyRootFilesystem": true,
+              "allowPrivilegeEscalation": false,
+              "capabilities": {
+                "drop": ["ALL"]
+              }
+            },
+            "volumeMounts": [
+              {
+                "name": "config",
+                "mountPath": "/config",
+                "readOnly": true
+              }
+            ]
+          }
+        ],
+        "volumes": [
+          {
+            "name": "config",
+            "configMap": {
+              "name": "radichat-batch"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

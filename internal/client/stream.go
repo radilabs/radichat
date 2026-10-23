@@ -28,7 +28,7 @@ type streamDelta struct {
 	FunctionCall json.RawMessage `json:"function_call"`
 }
 
-func decodeStream(streamCtx, parent context.Context, r io.Reader, opt Options, outputLimit int64, onDelta func(string) error) (string, error) {
+func decodeStream(streamCtx, parent context.Context, r io.Reader, opt Options, outputLimit int64, onDelta func(string) error) (string, string, error) {
 	br := bufio.NewReaderSize(r, 32*1024)
 	var assembled strings.Builder
 	gotDone := false
@@ -38,30 +38,30 @@ func decodeStream(streamCtx, parent context.Context, r io.Reader, opt Options, o
 
 	for {
 		if err := parent.Err(); err != nil {
-			return assembled.String(), err
+			return assembled.String(), "", err
 		}
 		if err := streamCtx.Err(); err != nil {
-			return assembled.String(), fmt.Errorf("idle timeout waiting for stream data; the connection was closed")
+			return assembled.String(), "", fmt.Errorf("idle timeout waiting for stream data; the connection was closed")
 		}
 		event, n, err := readSSEEvent(br, opt.MaxEventBytes)
 		totalRead += int64(n)
 		if totalRead > opt.MaxStreamBytes {
-			return assembled.String(), fmt.Errorf("stream exceeded the %d-byte local read limit; the turn was discarded", opt.MaxStreamBytes)
+			return assembled.String(), "", fmt.Errorf("stream exceeded the %d-byte local read limit; the turn was discarded", opt.MaxStreamBytes)
 		}
 		if err != nil {
 			if parent.Err() != nil {
-				return assembled.String(), parent.Err()
+				return assembled.String(), "", parent.Err()
 			}
 			if streamCtx.Err() != nil {
-				return assembled.String(), fmt.Errorf("idle timeout waiting for stream data; the connection was closed")
+				return assembled.String(), "", fmt.Errorf("idle timeout waiting for stream data; the connection was closed")
 			}
 			if errors.Is(err, io.EOF) {
 				if gotDone {
 					break
 				}
-				return assembled.String(), fmt.Errorf("stream ended before [DONE]; the endpoint closed the connection early")
+				return assembled.String(), "", fmt.Errorf("stream ended before [DONE]; the endpoint closed the connection early")
 			}
-			return assembled.String(), err
+			return assembled.String(), "", err
 		}
 		if event == nil {
 			continue
@@ -77,37 +77,37 @@ func decodeStream(streamCtx, parent context.Context, r io.Reader, opt Options, o
 
 		var chunk streamChunk
 		if err := json.Unmarshal([]byte(data), &chunk); err != nil {
-			return assembled.String(), fmt.Errorf("malformed stream JSON; the endpoint sent an event RadiChat cannot parse")
+			return assembled.String(), "", fmt.Errorf("malformed stream JSON; the endpoint sent an event RadiChat cannot parse")
 		}
 		if err := classifyStreamError(chunk.Error, opt.omitErrorSnippets); err != nil {
-			return assembled.String(), err
+			return assembled.String(), "", err
 		}
 		if len(chunk.Choices) == 0 {
 			continue
 		}
 		if len(chunk.Choices) != 1 {
-			return assembled.String(), fmt.Errorf("stream included %d choices; RadiChat supports exactly one choice", len(chunk.Choices))
+			return assembled.String(), "", fmt.Errorf("stream included %d choices; RadiChat supports exactly one choice", len(chunk.Choices))
 		}
 		sawChoice = true
 		ch := chunk.Choices[0]
 		if len(ch.Delta.ToolCalls) > 0 && string(ch.Delta.ToolCalls) != "null" && string(ch.Delta.ToolCalls) != "[]" {
-			return assembled.String(), fmt.Errorf("endpoint requested tool calls, which Phase 1 does not support")
+			return assembled.String(), "", fmt.Errorf("endpoint requested tool calls, which Phase 1 does not support")
 		}
 		if len(ch.Delta.FunctionCall) > 0 && string(ch.Delta.FunctionCall) != "null" {
-			return assembled.String(), fmt.Errorf("endpoint requested a function call, which Phase 1 does not support")
+			return assembled.String(), "", fmt.Errorf("endpoint requested a function call, which Phase 1 does not support")
 		}
 		text, err := deltaText(ch.Delta.Content)
 		if err != nil {
-			return assembled.String(), err
+			return assembled.String(), "", err
 		}
 		if text != "" {
 			if outputLimit > 0 && int64(assembled.Len())+int64(len(text)) > outputLimit {
-				return assembled.String(), fmt.Errorf("assistant output exceeded the local %d-byte bound derived from context_budget; the turn was discarded", outputLimit)
+				return assembled.String(), "", fmt.Errorf("assistant output exceeded the local %d-byte bound derived from context_budget; the turn was discarded", outputLimit)
 			}
 			assembled.WriteString(text)
 			if onDelta != nil {
 				if err := onDelta(text); err != nil {
-					return assembled.String(), err
+					return assembled.String(), "", err
 				}
 			}
 		}
@@ -117,20 +117,20 @@ func decodeStream(streamCtx, parent context.Context, r io.Reader, opt Options, o
 	}
 
 	if !gotDone {
-		return assembled.String(), fmt.Errorf("stream ended before [DONE]; the endpoint closed the connection early")
+		return assembled.String(), "", fmt.Errorf("stream ended before [DONE]; the endpoint closed the connection early")
 	}
 	if !sawChoice && assembled.Len() == 0 {
-		return "", fmt.Errorf("stream completed without any choices; check that the model name is valid")
+		return "", "", fmt.Errorf("stream completed without any choices; check that the model name is valid")
 	}
 	switch finish {
 	case "", "stop", "length":
-		return assembled.String(), nil
+		return assembled.String(), finish, nil
 	case "tool_calls", "function_call":
-		return assembled.String(), fmt.Errorf("endpoint finished with %s, which Phase 1 does not support", finish)
+		return assembled.String(), "", fmt.Errorf("endpoint finished with %s, which Phase 1 does not support", finish)
 	case "content_filter":
-		return assembled.String(), fmt.Errorf("endpoint refused the completion (content_filter)")
+		return assembled.String(), "", fmt.Errorf("endpoint refused the completion (content_filter)")
 	default:
-		return assembled.String(), fmt.Errorf("endpoint finished with unsupported reason %q", finish)
+		return assembled.String(), "", fmt.Errorf("endpoint finished with unsupported reason %q", finish)
 	}
 }
 

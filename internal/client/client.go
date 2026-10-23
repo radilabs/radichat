@@ -136,12 +136,25 @@ type requestBody struct {
 	MaxTokens int64         `json:"max_tokens"`
 }
 
-func (c *Client) Stream(ctx context.Context, messages []chat.Message, outputLimit int64, onDelta func(string) error) (string, error) {
-	text, err := c.doStream(ctx, messages, outputLimit, onDelta)
-	return text, c.redactErr(err)
+// StreamResult is the outcome of one streamed completion.
+// RequestSent is true only after httptrace reports a successful request write.
+type StreamResult struct {
+	Text         string
+	FinishReason string
+	RequestSent  bool
 }
 
-func (c *Client) doStream(ctx context.Context, messages []chat.Message, outputLimit int64, onDelta func(string) error) (string, error) {
+func (c *Client) Stream(ctx context.Context, messages []chat.Message, outputLimit int64, onDelta func(string) error) (string, error) {
+	res, err := c.StreamResult(ctx, messages, outputLimit, onDelta)
+	return res.Text, err
+}
+
+func (c *Client) StreamResult(ctx context.Context, messages []chat.Message, outputLimit int64, onDelta func(string) error) (StreamResult, error) {
+	res, err := c.doStream(ctx, messages, outputLimit, onDelta)
+	return res, c.redactErr(err)
+}
+
+func (c *Client) doStream(ctx context.Context, messages []chat.Message, outputLimit int64, onDelta func(string) error) (StreamResult, error) {
 	body := requestBody{
 		Model:     c.cfg.Model,
 		Stream:    true,
@@ -153,15 +166,15 @@ func (c *Client) doStream(ctx context.Context, messages []chat.Message, outputLi
 	}
 	payload, err := json.Marshal(body)
 	if err != nil {
-		return "", fmt.Errorf("cannot encode chat request: %v", err)
+		return StreamResult{}, fmt.Errorf("cannot encode chat request: %v", err)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.cfg.Endpoint, strings.NewReader(string(payload)))
 	if err != nil {
 		if c.authenticated() {
-			return "", fmt.Errorf("cannot build request to the configured endpoint")
+			return StreamResult{}, fmt.Errorf("cannot build request to the configured endpoint")
 		}
-		return "", fmt.Errorf("cannot build request to %s: %v", c.cfg.Endpoint, err)
+		return StreamResult{}, fmt.Errorf("cannot build request to %s: %v", c.cfg.Endpoint, err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "text/event-stream")
@@ -169,15 +182,21 @@ func (c *Client) doStream(ctx context.Context, messages []chat.Message, outputLi
 		req.Header.Set("Authorization", "Bearer "+c.cfg.BearerToken)
 	}
 	var gotConn net.Conn
+	var requestSent bool
 	req = req.WithContext(httptrace.WithClientTrace(req.Context(), &httptrace.ClientTrace{
 		GotConn: func(info httptrace.GotConnInfo) {
 			gotConn = info.Conn
+		},
+		WroteRequest: func(info httptrace.WroteRequestInfo) {
+			if info.Err == nil {
+				requestSent = true
+			}
 		},
 	}))
 
 	resp, err := c.http.Do(req)
 	if err != nil {
-		return "", c.transportError(ctx, err)
+		return StreamResult{RequestSent: requestSent}, c.transportError(ctx, err)
 	}
 	defer resp.Body.Close()
 	closeReq := func() {
@@ -191,22 +210,23 @@ func (c *Client) doStream(ctx context.Context, messages []chat.Message, outputLi
 	stopWatch := context.AfterFunc(streamCtx, closeReq)
 	defer stopWatch()
 
+	sent := StreamResult{RequestSent: requestSent}
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		if c.authenticated() {
 			discardBounded(resp.Body, c.opt.MaxErrorBodyBytes)
-			return "", fmt.Errorf("endpoint returned HTTP %d; %s", resp.StatusCode, omittedBodyHint)
+			return sent, fmt.Errorf("endpoint returned HTTP %d; %s", resp.StatusCode, omittedBodyHint)
 		}
 		snippet := readBounded(resp.Body, c.opt.MaxErrorBodyBytes)
-		return "", fmt.Errorf("endpoint returned HTTP %d; %s", resp.StatusCode, snippetHint(snippet))
+		return sent, fmt.Errorf("endpoint returned HTTP %d; %s", resp.StatusCode, snippetHint(snippet))
 	}
 	ct := strings.ToLower(resp.Header.Get("Content-Type"))
 	if ct != "" && !strings.Contains(ct, "text/event-stream") {
 		if c.authenticated() {
 			discardBounded(resp.Body, c.opt.MaxErrorBodyBytes)
-			return "", fmt.Errorf("endpoint Content-Type is not text/event-stream; %s", omittedBodyHint)
+			return sent, fmt.Errorf("endpoint Content-Type is not text/event-stream; %s", omittedBodyHint)
 		}
 		snippet := readBounded(resp.Body, c.opt.MaxErrorBodyBytes)
-		return "", fmt.Errorf("endpoint Content-Type %q is not text/event-stream; %s", resp.Header.Get("Content-Type"), snippetHint(snippet))
+		return sent, fmt.Errorf("endpoint Content-Type %q is not text/event-stream; %s", resp.Header.Get("Content-Type"), snippetHint(snippet))
 	}
 
 	limited := idleResetReader{
@@ -230,7 +250,7 @@ func (c *Client) doStream(ctx context.Context, messages []chat.Message, outputLi
 			return nil
 		}
 	}
-	text, err := decodeStream(streamCtx, ctx, limited, opt, outputLimit, onDelta)
+	text, finish, err := decodeStream(streamCtx, ctx, limited, opt, outputLimit, onDelta)
 	if filt != nil {
 		text = filt.redactAssembled(text)
 		if err == nil {
@@ -241,7 +261,10 @@ func (c *Client) doStream(ctx context.Context, messages []chat.Message, outputLi
 			}
 		}
 	}
-	return text, err
+	if err != nil {
+		finish = ""
+	}
+	return StreamResult{Text: text, FinishReason: finish, RequestSent: requestSent}, err
 }
 
 // idleResetReader treats any successful underlying Read that returns bytes as

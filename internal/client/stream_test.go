@@ -106,7 +106,7 @@ func TestDecodeStreamOneEventAcrossIdleWindows(t *testing.T) {
 	}
 	done := make(chan result, 1)
 	go func() {
-		text, err := decodeStream(streamCtx, parent, r, Options{MaxEventBytes: 1 << 20, MaxStreamBytes: 1 << 20}, 8192, nil)
+		text, _, err := decodeStream(streamCtx, parent, r, Options{MaxEventBytes: 1 << 20, MaxStreamBytes: 1 << 20}, 8192, nil)
 		done <- result{text, err}
 	}()
 	go func() {
@@ -169,7 +169,7 @@ func TestDecodeStreamStallWithoutBytesFails(t *testing.T) {
 	}
 	done := make(chan result, 1)
 	go func() {
-		_, err := decodeStream(streamCtx, parent, r, Options{MaxEventBytes: 1 << 20, MaxStreamBytes: 1 << 20}, 8192, nil)
+		_, _, err := decodeStream(streamCtx, parent, r, Options{MaxEventBytes: 1 << 20, MaxStreamBytes: 1 << 20}, 8192, nil)
 		done <- result{err}
 	}()
 	go func() {

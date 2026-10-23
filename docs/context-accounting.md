@@ -1,6 +1,6 @@
 # Context accounting
 
-**Decision:** `decisions/0001-phase-1-context-accounting.md` (accepted).
+**Decision:** `decisions/0001-phase-1-context-accounting.md` (accepted). Startup fit for a non-empty system prompt is an extension recorded in `decisions/0003-batch-io-contract.md`. Decision 0001 is unchanged.
 
 RadiChat enforces an application working budget. It does **not** count exact model tokens and does **not** reproduce a server's chat template. A server context overflow remains a visible error with no retry or hidden fallback.
 
@@ -29,6 +29,8 @@ On each user line:
 5. Send the staged messages.
 
 The system message and the current user message are never trimmed.
+
+Before the REPL starts, a non-empty system prompt from `system_prompt` or `system_prompt_file` is checked with the same rule: the system message, an empty user message, and `generation_reserve` must fit in `context_budget`. Failure exits 1 and sends no request. Configurations with no system prompt, including an empty inline string, skip that startup check. JSONL result records are not part of this budget. Trimming a turn out of the model context does not remove its result record.
 
 ## Commit and rollback
 
