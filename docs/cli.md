@@ -9,7 +9,7 @@ radichat -help
 
 Default config path: `radichat.json` in the working directory.
 
-`-input PATH` reads lines from a regular file or FIFO instead of stdin. The path is relative to the working directory. A file named `-` is opened as `./-`. Missing paths and directories exit 1 before any request. File input is non-interactive.
+`-input PATH` reads lines from a regular file or FIFO instead of stdin. The path is relative to the working directory. A file named `-` is opened as `./-`. Missing paths and directories exit 1 before any request. File input is non-interactive. Opening a FIFO blocks until a writer connects, and SIGINT or SIGTERM cannot interrupt that open. See [Batch input and JSONL results](batch.md) for the FIFO and signal limitation.
 
 `-output PATH` creates a new mode `0600` JSONL file after config, prompt fit, and input validation. An existing file is left unchanged and startup fails. `-output -` writes JSONL only to stdout. See [Batch input and JSONL results](batch.md).
 

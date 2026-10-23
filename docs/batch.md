@@ -12,7 +12,9 @@ With no new flags, stdin and stdout behave as before, except for the startup con
 
 `-input PATH` reads conversation lines from a regular file or a FIFO instead of stdin. Paths are relative to the working directory. A file whose name is `-` is passed as `./-`; `-input -` is not an alias for stdin. Opening a FIFO waits until a writer opens it. A missing path or a directory exits 1 and does not contact the endpoint. File input does not print the interactive `> ` prompt.
 
-Line rules match stdin: one physical line is one turn, blank and whitespace-only lines are ignored, `/clear` and `/quit` work, a final line without a newline is processed, and a line longer than the input bound is rejected. Line numbers count physical lines, including blanks, starting at 1.
+**FIFO and signal limitation.** The input path is opened before the REPL starts, and that open blocks until a writer connects. SIGINT and SIGTERM are recorded, but they cannot interrupt the blocked open. The process exits with 130 or 143 only after a writer opens the FIFO and the REPL receives the cancellation. Use a regular file when prompt signal exit is required. The Kubernetes example uses a regular file.
+
+Line rules match stdin: one physical line is one turn, blank and whitespace-only lines are ignored, `/clear` and `/quit` work, a final line without a newline is processed, and a line longer than the input bound is rejected. Line numbers count physical lines, including blanks, starting at 1. An unknown `/command` is a failed turn: if it is the last input line, the process exits 1 at EOF.
 
 ## Output
 
@@ -26,7 +28,7 @@ Terminal streaming remains on stdout when `-output` is a file path. Interactive 
 
 ## JSONL v1
 
-Each handled non-blank line produces one record. Fields that do not apply are omitted, not null. `v` is the integer 1.
+Each handled non-blank line produces one record. Every record has `v` (the integer 1), `line` (the 1-based physical input line number, counting blank lines), and `kind`. Other fields that do not apply are omitted, not null. `line` is present on every kind, including `clear`, `quit`, and `command_error`.
 
 | `kind` | `status` | Fields |
 | --- | --- | --- |

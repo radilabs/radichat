@@ -28,7 +28,7 @@ It is intentionally not an agent runtime, automation harness, model server, or f
 
 ## Install a prebuilt binary
 
-The [`v0.1.0` release](https://github.com/radilabs/radichat/releases/tag/v0.1.0) provides binaries for Linux and macOS on amd64 and arm64. Download the matching artifact and verify it against `SHA256SUMS` from the same release before running it. The macOS binaries are unsigned and not notarized.
+The [`v0.1.0` release](https://github.com/radilabs/radichat/releases/tag/v0.1.0) provides binaries for Linux and macOS on amd64 and arm64. Download the matching artifact and verify it against `SHA256SUMS` from the same release before running it. The macOS binaries are cross-compiled release artifacts. They are unsigned, not notarized, and not runtime-tested by this project. macOS runtime support is not claimed.
 
 ## Install from source
 
@@ -185,7 +185,7 @@ Bearer tokens live in process memory after startup. The authenticated path omits
 
 ## Limitations and non-goals
 
-- Linux is the only release target currently verified.
+- Linux is the only platform the project runtime-tests. Other release artifacts are cross-compiled and carry no runtime support claim.
 - The client supports a narrow streaming Chat Completions subset, not every provider extension.
 - Context accounting uses deterministic UTF-8 byte-based units, not a model tokenizer.
 - There is no endpoint discovery, hidden fallback, automatic retry, or non-streaming fallback.
@@ -198,7 +198,7 @@ These boundaries are product choices for the current release state, not missing 
 
 ## Project status and release information
 
-Stage 1 is accepted: local chat and optional endpoint authentication are complete and independently verified. `main` is the current public-ready checkpoint.
+Phases 0–6 are accepted. Phase 6 (v0.1.1 file prompts, `-input`, and JSONL `-output`) is accepted on `main`. No v0.1.1 tag, release, binary, or image has been published.
 
 Current release: [`v0.1.0`](https://github.com/radilabs/radichat/releases/tag/v0.1.0), the initial public source release for the accepted local-chat and endpoint-authentication feature set. The repository does not yet define a broader versioning policy.
 
@@ -207,7 +207,8 @@ High-level roadmap:
 - Phase 0 — repository and product contracts: accepted.
 - Phase 1 — unauthenticated local chat core: accepted.
 - Phase 2 — optional bearer authentication: accepted.
-- Stage 4 / Phase 6 adds file prompts, file input, and opt-in JSONL results in the working tree. It is not a release. Owner acceptance is required before any tag or image publication. The Kubernetes example is documentation only and uses the placeholder digest `REPLACE_WITH_V0_1_1_DIGEST`.
+- Phases 3–5 — Factory v1.2 migration, `radichat-mock` test tooling, and the adversarial protocol investigation: accepted.
+- Phase 6 — v0.1.1 file prompts, `-input`, and JSONL `-output`: accepted, not released. The Kubernetes example is documentation only and uses the placeholder digest `REPLACE_WITH_V0_1_1_DIGEST`.
 
 ## Documentation
 

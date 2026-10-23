@@ -24,6 +24,7 @@ The endpoint stays on the placeholder cluster host `llm.default.svc.cluster.loca
 - `backoffLimit: 0` so a failed batch is not run again automatically
 - `activeDeadlineSeconds: 120`
 - `automountServiceAccountToken: false` on the Pod spec
+- `seccompProfile: RuntimeDefault` on the Pod spec
 - `runAsNonRoot` and UID/GID 65532
 - read-only root filesystem
 - `allowPrivilegeEscalation: false`
@@ -39,6 +40,8 @@ ghcr.io/radilabs/radichat@sha256:REPLACE_WITH_V0_1_1_DIGEST
 ```
 
 `REPLACE_WITH_V0_1_1_DIGEST` is a placeholder. It is not a published digest. Do not treat this example as proof that a container image runs.
+
+The `-input`, `-output`, and `system_prompt_file` features exist only in an image built from the v0.1.1 candidate. The published `v0.1.0` image predates them, so this Job cannot run with that image. No v0.1.1 image has been published.
 
 ## Files
 

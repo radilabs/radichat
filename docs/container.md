@@ -14,6 +14,8 @@ ghcr.io/radilabs/radichat@sha256:2d8648b9f9d3c60273a7e432d0341a93e8e8fbcfe4c1726
 
 `latest` currently resolves to the same digest. Use the versioned tag or immutable digest when repeatability matters.
 
+The `v0.1.0` image predates the v0.1.1 `system_prompt_file` key and the `-input` and `-output` flags. A config that uses those features fails against it. No v0.1.1 image has been published.
+
 ## Configuration
 
 The image reads `/config/radichat.json` by default. Create `radichat.local.json` from one of the tracked examples, edit it for your endpoint, and mount it read-only:
