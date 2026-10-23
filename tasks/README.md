@@ -1,8 +1,8 @@
 # Task Execution
 
-Current phase: **none**
+Current phase: **Stage 4 / Phase 6 — v0.1.1 File I/O and Batch Support**
 
-Phases 0–4 are accepted. Phase 4's durable handoff is `docs/handoffs/phase-4.md`. Phase 5 was accepted by the Owner on 2026-10-14 after independent Watcher PASS. Its durable handoff is `docs/handoffs/phase-5.md`; reproducible test summaries are in `docs/testing-phase-5.md`.
+Phases 0–4 are accepted. Phase 4's durable handoff is `docs/handoffs/phase-4.md`. Phase 5 was accepted by the Owner on 2026-10-14 after independent Watcher PASS. Its durable handoff is `docs/handoffs/phase-5.md`; reproducible test summaries are in `docs/testing-phase-5.md`. Stage 4 / Phase 6 was authorized on 2026-10-23; its active task is `tasks/phase-6.md`.
 
 ## Operating Rules
 
@@ -36,4 +36,6 @@ Owner authorized Stage 3 / Phase 4 (`radichat-mock`) on 2026-10-14. At the time,
 
 Owner accepted Stage 3 / Phase 4 on 2026-10-14 after independent Watcher PASS on AC1–AC8. Its accepted checkpoint is `8e2951274e52f72963ad8ecb1d75a4a477fe6561`.
 
-Owner authorized Stage 3 / Phase 5 on 2026-10-14. It completed with zero confirmed divergences and independent Watcher PASS; Owner accepted it on 2026-10-14. Product-code fixes and Phase 6 remain unauthorized. The showcase package is prepared for Owner review; publication still requires separate authorization. No phase is currently authorized.
+Owner authorized Stage 3 / Phase 5 on 2026-10-14. It completed with zero confirmed divergences and independent Watcher PASS; Owner accepted it on 2026-10-14. Product-code fixes remain unauthorized; the Phase 5 contract's historical reference to Phase 6 meant the then-planned product-fix work. The showcase package is prepared for Owner review; publication still requires separate Owner authorization.
+
+Owner approved the v0.1.1 design at commit `334e9710efeab981782870df4bc0e050ef195be7` and authorized Stage 4 / Phase 6 on 2026-10-23. The authorized task is `tasks/phase-6.md`. Merge, tag, release, and publication are not authorized.

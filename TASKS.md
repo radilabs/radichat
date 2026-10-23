@@ -2,30 +2,32 @@
 
 ## Current Execution
 
-- **Current stage:** Stage 3 — Protocol Verification Tooling
-- **Current phase:** none
+- **Current stage:** Stage 4 — v0.1.1 File I/O and Batch Support
+- **Current phase:** Stage 4 / Phase 6 — v0.1.1 File I/O and Batch Support
 - **Last accepted phase:** Stage 3 / Phase 5 — Adversarial Protocol Investigation
-- **Status:** Phase 5 accepted by Owner on 2026-10-14 after Watcher PASS.
+- **Status:** Phase 6 authorized by Owner on 2026-10-23 after approving design commit `334e9710efeab981782870df4bc0e050ef195be7`; contract and task are active, implementation is pending plan review.
 
-Phase 5 is complete. No phase is currently authorized. Phase 6/product fixes are not authorized. The Build Week showcase package is prepared for Owner review; publication still requires separate Owner authorization.
+Phase 5 is complete. Phase 6 is the v0.1.1 file I/O and batch feature phase. Product fixes remain unauthorized; historical Phase 5 references to “Phase 6” meant the then-planned product-fix phase. The Build Week showcase package remains unpublished; publication still requires separate Owner authorization.
 
 Accepted task record: `tasks/phase-5.md`.
+Active task record: `tasks/phase-6.md`.
 
 Task map:
 
 ```text
 tasks/phase-5.md  (accepted)
+tasks/phase-6.md  (active; Stage 4 / Phase 6)
 ```
 
 The accepted Stage 2 / Phase 3 checkpoint and all earlier accepted history remain preserved.
 
 Detailed implementation tasks live under `tasks/`.
 
-Phases 0–4 are accepted and preserved. No phase is currently authorized.
+Phases 0–5 are accepted and preserved. Stage 4 / Phase 6 is active.
 
-## Next Milestone — v0.1.1: File I/O and Batch Support (Owner-requested, planning only)
+## v0.1.1 Milestone Brief — File I/O and Batch Support (Owner-requested)
 
-Owner requested this bounded next step on 2026-10-23. This entry is a product brief for the Factory to turn into an explicit stage/phase contract in `PHASES.md` before implementation. It is **not** an active phase, an implementation task file, or authorization to merge or release. Existing accepted history remains unchanged.
+Owner requested this bounded next step on 2026-10-23. The brief below has been materialized as Stage 4 / Phase 6 in `PHASES.md`, and its active task file is `tasks/phase-6.md`. The design proposal was approved in commit `334e9710efeab981782870df4bc0e050ef195be7`. This authorization does not include merge, tag, release, or showcase publication. Existing accepted history remains unchanged.
 
 **Product intent:** Keep RadiChat a small Unix-style OpenAI-compatible chat client; support manual local batch testing and execution inside a Kubernetes Job without coupling the client to Kubernetes.
 
@@ -38,7 +40,7 @@ Owner requested this bounded next step on 2026-10-23. This entry is a product br
 
 **Excluded:** database, session reload/resume, implicit transcript storage, concurrent requests, retries, scheduling/orchestration, Kubernetes client/API integration, agents/tools, new external dependencies, and changes to the existing supported inference protocol.
 
-**Factory handoff:** Architect reviews the exact CLI/config and output contract, Driver establishes and records the bounded phase authorization in `PHASES.md`, then creates the active `tasks/phase-N.md` as required by the repository rules. Coder implements, independent Watcher verifies, and Owner accepts before merge/release. Do not infer from this brief that any phase has started.
+**Factory handoff:** Architect reviewed the exact CLI/config and output contract. The Owner approved the design and authorized Stage 4 / Phase 6; the Driver recorded the bounded contract in `PHASES.md` and created `tasks/phase-6.md`. Coder implements, independent Watcher verifies, and Owner accepts before any checkpoint or release action.
 
 ## Authorization
 
@@ -56,11 +58,13 @@ Owner explicitly authorized Stage 3 / Phase 5 (Adversarial Protocol Investigatio
 
 Owner accepted Stage 3 / Phase 5 on 2026-10-14 after accepting the independent Watcher PASS. The bounded investigation recorded zero confirmed divergences; no product fix was made. The durable handoff and publishable evidence summary are `docs/handoffs/phase-5.md` and `docs/testing-phase-5.md`. The showcase draft is prepared but unpublished; publication requires separate Owner authorization.
 
+Owner approved the v0.1.1 File I/O and Batch design at commit `334e9710efeab981782870df4bc0e050ef195be7` and authorized Stage 4 / Phase 6 on 2026-10-23. The authorization covers implementation and independent Watcher verification; explicit Owner acceptance remains required. Merge, tag, release, and publication are not authorized.
+
 ## History
 
 Last completed phase: **Stage 3 / Phase 5 — Adversarial Protocol Investigation**.
 
-No phase is currently authorized.
+Active phase: **Stage 4 / Phase 6 — v0.1.1 File I/O and Batch Support**.
 
 ## Authority
 
