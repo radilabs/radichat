@@ -102,6 +102,6 @@ Corrected content identity: `7400ede49b71e846a86771ea950eba4da7206a4752c30957191
 
 Fresh independent Watcher: PASS on corrected identity `7400ede49b71e846a86771ea950eba4da7206a4752c30957191460a5062e3a8b`; report `.factory/reports/stage-4-phase-6-watcher-02.md` (ignored runtime artifact).
 
-Review checkpoint: Owner-authorized commit and push to `main` are in progress. Phase 6 acceptance remains pending Owner inspection.
+Review checkpoint: candidate commit `c77110d76633bef27dd1f4f347fe46c3c629d1ed` was pushed to `main`; `origin/main` matched this commit and tree at verification, with a clean working tree. This checkpoint is not Phase 6 acceptance. Owner inspection remains pending.
 
 Do not merge, tag, release, or publish without separate Owner authorization.
