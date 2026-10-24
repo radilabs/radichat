@@ -9,6 +9,7 @@ This directory contains RadiChat's durable user and protocol documentation.
 - [Batch input and JSONL results](batch.md) — file input, JSONL v1, output-file rules, and signals.
 - [Kubernetes Job example](kubernetes.md) — structural Job/ConfigMap example. No cluster or image run is claimed.
 - [Container image](container.md) — public image references, configuration mounts, networking, and authentication.
+- [Releasing RadiChat](releasing.md) — v0.1.0 release evidence, the checked-in local v0.1.1 OCI packaging procedure, and open items. Documentation only; no tag, release, or publication is authorized.
 - [Testing with radichat-mock](testing-mock.md) — development mock of the endpoint for protocol and auth tests; not part of the product.
 - [Phase 5 investigation summary](testing-phase-5.md) — public test coverage, reproducible commands, results, and limits from the bounded adversarial investigation.
 - [Accepted handoffs](handoffs/README.md) — concise snapshots of verified phase checkpoints, including Phases 4 and 5.

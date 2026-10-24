@@ -7,9 +7,10 @@
 - **Last accepted phase:** Stage 4 / Phase 6 — v0.1.1 File I/O and Batch Support
 - **Status:** Phase 6 accepted by the Owner on 2026-10-23 after fresh independent Watcher PASS. Accepted implementation checkpoint `c77110d76633bef27dd1f4f347fe46c3c629d1ed` was pushed to `main`; remote parity was verified. No later phase is authorized. No tag or release.
 
-Phases 0–6 are accepted. Phase 6 delivered v0.1.1 file I/O and batch support. Historical Phase 5 references to “Phase 6” meant the then-planned product-fix phase. No next phase is authorized. Release, tag, image publication, and showcase publication require separate Owner authorization.
+Phases 0–6 are accepted. Phase 6 delivered v0.1.1 file I/O and batch support. Historical Phase 5 references to “Phase 6” meant the then-planned product-fix phase. No next phase is authorized. Release, tag, image publication, and showcase publication require separate Owner authorization, except for the separately recorded Owner-authorized local OCI packaging preparation in `tasks/release-oci-v0.1.1.md`; this does not authorize publication.
 
 Accepted task records: `tasks/phase-5.md`, `tasks/phase-6.md`.
+Owner-authorized release-preparation record: `tasks/release-oci-v0.1.1.md` (not a phase; no tag/release/publication authorization).
 Durable Phase 6 handoff: `docs/handoffs/phase-6.md`.
 
 Task map:

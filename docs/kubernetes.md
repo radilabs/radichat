@@ -39,7 +39,7 @@ The manifest image is:
 ghcr.io/radilabs/radichat@sha256:REPLACE_WITH_V0_1_1_DIGEST
 ```
 
-`REPLACE_WITH_V0_1_1_DIGEST` is a placeholder. It is not a published digest. Do not treat this example as proof that a container image runs.
+`REPLACE_WITH_V0_1_1_DIGEST` is a placeholder. It is not a published digest. The local `v0.1.1` archive index digest (`sha256:10e843853f975998159e6110aeb55c5b9e1ec5db8edfd2f9d1ad59a9fc112505`) is not a registry digest and is not used here. Replace the placeholder only after a registry push is verified. Do not treat this example as proof that a container image runs.
 
 The `-input`, `-output`, and `system_prompt_file` features exist only in an image built from the v0.1.1 candidate. The published `v0.1.0` image predates them, so this Job cannot run with that image. No v0.1.1 image has been published.
 

@@ -1,0 +1,5 @@
+*
+!Containerfile
+!radichat-linux-amd64
+!radichat-linux-arm64
+!ca-certificates.crt
