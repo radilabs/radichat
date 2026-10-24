@@ -1,6 +1,6 @@
 # Kubernetes Job example
 
-The JSON manifests in `examples/kubernetes/` show one non-interactive RadiChat run inside a Kubernetes Job. RadiChat does not call the Kubernetes API. The examples were checked with `encoding/json` and the RadiChat config parser. No cluster was contacted, and no v0.1.1 image was built or run.
+The JSON manifests in `examples/kubernetes/` show one non-interactive RadiChat run inside a Kubernetes Job. RadiChat does not call the Kubernetes API. The examples were checked with `encoding/json` and the RadiChat config parser. No cluster was contacted. A local v0.1.1 OCI archive was built and verified, but it was not published or run in a container.
 
 `kubectl logs` can mix stdout and stderr. A JSONL consumer must read stdout separately or filter out diagnostic lines.
 
