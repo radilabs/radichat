@@ -47,8 +47,9 @@ func TestKubernetesManifests(t *testing.T) {
 	}
 	ctr := asMap(t, containers[0])
 	image, _ := ctr["image"].(string)
-	if !strings.Contains(image, "REPLACE_WITH_V0_1_1_DIGEST") {
-		t.Fatalf("image %q", image)
+	const wantImage = "ghcr.io/radilabs/radichat@sha256:10e843853f975998159e6110aeb55c5b9e1ec5db8edfd2f9d1ad59a9fc112505"
+	if image != wantImage {
+		t.Fatalf("image %q, want %q", image, wantImage)
 	}
 	if ctr["stdin"] != false || ctr["tty"] != false {
 		t.Fatalf("stdin/tty %+v %+v", ctr["stdin"], ctr["tty"])

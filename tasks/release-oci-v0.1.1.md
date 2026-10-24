@@ -59,6 +59,15 @@ Produce a reproducible local OCI image archive for the existing RadiChat v0.1.1 
 - Independent Watcher verification: PASS on packaging candidate `00b2c99c4a1f3b7619e961e778cecf540ad92ffa` for the actual archive, manifest/config/payload checks, pinned builder and CA inputs, and independent byte-for-byte rebuild. The Watcher identified one stale statement in `docs/kubernetes.md`; it was corrected in `be18552a999adcd94c0e0b691a630538efc67481`. Fresh independent Watcher follow-up on `be18552a999adcd94c0e0b691a630538efc67481`: PASS for that documentation correction and confirmation that packaging files and actual archives are unchanged. Detailed evidence is in the ignored local Watcher report `.factory/reports/release-prep-v0.1.1-watcher-02.md` and in tracked build instructions/results above.
 - Runtime smoke: not performed because this host has no OCI runtime. Image non-root execution is verified from config and layer ownership/modes; actual process execution is not claimed. The arm64 binary was not runtime-tested.
 - The v0.1.1 image has only `version` and `revision` labels; the additional descriptive labels on v0.1.0 are not present. The documented configuration and execution behavior, including the default config path, is preserved.
-- No v0.1.1 tag, GitHub release, binary upload, GHCR push, or modification of the v0.1.0 image occurred. No registry digest exists yet.
+- The statements above describe the state before publication. They are kept as the packaging record.
 
-The release remains unpublished until separately authorized.
+### Publication record (2026-10-24)
+
+- Publication was separately authorized by the Owner and is complete. The durable release record is `docs/handoffs/release-v0.1.1.md`.
+- Tag `v0.1.1` is annotated and peels to `6645988e354076fede28070686b23667d0ff89ac`. `origin/main` is at the same commit.
+- GitHub release: https://github.com/radilabs/radichat/releases/tag/v0.1.1, with four binary assets and `SHA256SUMS`. The published assets are byte-identical to the local build.
+- GHCR `ghcr.io/radilabs/radichat:v0.1.1`: index digest `sha256:10e843853f975998159e6110aeb55c5b9e1ec5db8edfd2f9d1ad59a9fc112505`. Platform manifests are listed in the release handoff.
+- Publication used ORAS `v1.3.5`, copying an adapted local OCI layout that carries the outer `org.opencontainers.image.ref.name` annotation. No blob was changed.
+- `latest` was not moved. It still resolves to the `v0.1.0` digest `sha256:2d8648b9f9d3c60273a7e432d0341a93e8e8fbcfe4c172617ddce3a07df98ecf`. `v0.1.0` is unchanged.
+- The published image has not been run in a container.
+- `examples/kubernetes/job.json` now uses the published digest, and its test checks that exact reference.

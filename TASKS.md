@@ -5,12 +5,14 @@
 - **Completed stage:** Stage 4 — v0.1.1 File I/O and Batch Support
 - **Current phase:** None authorized for execution.
 - **Last accepted phase:** Stage 4 / Phase 6 — v0.1.1 File I/O and Batch Support
-- **Status:** Phase 6 accepted by the Owner on 2026-10-23 after fresh independent Watcher PASS. Accepted implementation checkpoint `c77110d76633bef27dd1f4f347fe46c3c629d1ed` was pushed to `main`; remote parity was verified. No later phase is authorized. No tag or release.
+- **Status:** Phase 6 accepted by the Owner on 2026-10-23 after fresh independent Watcher PASS. Accepted implementation checkpoint `c77110d76633bef27dd1f4f347fe46c3c629d1ed` was pushed to `main`. No later phase is authorized.
+- **Release status:** `v0.1.1` is published on 2026-10-24. Annotated tag `v0.1.1` peels to `6645988e354076fede28070686b23667d0ff89ac`. GitHub release: https://github.com/radilabs/radichat/releases/tag/v0.1.1. GHCR image `ghcr.io/radilabs/radichat:v0.1.1` is `sha256:10e843853f975998159e6110aeb55c5b9e1ec5db8edfd2f9d1ad59a9fc112505`. The image has not been run in a container. `latest` was not moved and still resolves to `v0.1.0`.
+- **Release handoff:** `docs/handoffs/release-v0.1.1.md`.
 
-Phases 0–6 are accepted. Phase 6 delivered v0.1.1 file I/O and batch support. Historical Phase 5 references to “Phase 6” meant the then-planned product-fix phase. No next phase is authorized. Release, tag, image publication, and showcase publication require separate Owner authorization, except for the separately recorded Owner-authorized local OCI packaging preparation in `tasks/release-oci-v0.1.1.md`; this does not authorize publication.
+Phases 0–6 are accepted. Phase 6 delivered v0.1.1 file I/O and batch support. Historical Phase 5 references to “Phase 6” meant the then-planned product-fix phase. No next phase is authorized. Any further tag, GitHub release, image publication, or `latest` change requires separate Owner authorization. Showcase publication also requires separate Owner authorization.
 
 Accepted task records: `tasks/phase-5.md`, `tasks/phase-6.md`.
-Owner-authorized release-preparation record: `tasks/release-oci-v0.1.1.md` (not a phase; no tag/release/publication authorization).
+Owner-authorized release record: `tasks/release-oci-v0.1.1.md` (not a phase; publication completed 2026-10-24).
 Durable Phase 6 handoff: `docs/handoffs/phase-6.md`.
 
 Task map:

@@ -4,7 +4,7 @@ Current phase: **None authorized.** Stage 4 / Phase 6 is accepted and closed.
 
 Phases 0–6 are accepted. Phase 4's durable handoff is `docs/handoffs/phase-4.md`. Phase 5 was accepted by the Owner on 2026-10-14 after independent Watcher PASS. Its durable handoff is `docs/handoffs/phase-5.md`; reproducible test summaries are in `docs/testing-phase-5.md`. Stage 4 / Phase 6 was accepted and closed on 2026-10-23; its task file is historical: `tasks/phase-6.md`.
 
-The Owner separately authorized local v0.1.1 OCI packaging preparation on 2026-10-24. This bounded release task is recorded in `tasks/release-oci-v0.1.1.md`; it is not a phase and does not authorize product changes, a tag, release, or publication.
+The Owner separately authorized v0.1.1 OCI packaging on 2026-10-24, and later authorized and completed the `v0.1.1` publication on the same date. The bounded release task is recorded in `tasks/release-oci-v0.1.1.md`; it is not a phase. The durable release record is `docs/handoffs/release-v0.1.1.md`. Any further tag, release, or image publication needs separate Owner authorization.
 
 ## Operating Rules
 
@@ -42,4 +42,4 @@ Owner authorized Stage 3 / Phase 5 on 2026-10-14. It completed with zero confirm
 
 Owner approved the v0.1.1 design at commit `334e9710efeab981782870df4bc0e050ef195be7` and authorized Stage 4 / Phase 6 on 2026-10-23. The accepted task is `tasks/phase-6.md`. Merge, tag, release, and publication were not authorized by that phase.
 
-Owner authorized v0.1.1 local OCI packaging preparation on 2026-10-24. The separate bounded task is `tasks/release-oci-v0.1.1.md`. It authorizes packaging implementation, local builds, verification, documentation corrections, and necessary preparation commits only; it does not reopen Phase 6 or authorize tagging, release, GHCR push, or publication.
+Owner authorized v0.1.1 OCI packaging on 2026-10-24. The separate bounded task is `tasks/release-oci-v0.1.1.md`. That packaging authorization covered implementation, local builds, verification, and documentation corrections; it did not reopen Phase 6. The Owner subsequently authorized and completed the `v0.1.1` publication on 2026-10-24. See `docs/handoffs/release-v0.1.1.md`.

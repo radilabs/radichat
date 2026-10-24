@@ -1,6 +1,6 @@
 # Releasing RadiChat
 
-This document records three things: the evidence for the published `v0.1.0` binaries and container image, the checked-in local OCI packaging procedure for `v0.1.1`, and the local `v0.1.1` artifacts with their open items. It does not authorize a tag, GitHub release, GHCR push, or any change to `v0.1.0`. Those require separate Owner authorization.
+This document records four things: the evidence for the published `v0.1.0` binaries and container image, the checked-in OCI packaging procedure for `v0.1.1`, the publication of `v0.1.1` (tag, GitHub release, and GHCR image), and the open items. The durable release record is [v0.1.1 release record](handoffs/release-v0.1.1.md). Any further tag, release, or image publication requires separate Owner authorization. `v0.1.0` and `latest` are not changed by this document.
 
 Each statement is marked as **verified** (checked against a named source in this repository or a read-only registry or GitHub fetch), **reported** (taken from a source this repository does not contain), or **unknown**.
 
@@ -48,9 +48,9 @@ The GitHub release `v0.1.0` states that all binaries were built from tag `v0.1.0
 - **Unknown:** whether the `v0.1.0` image was assembled by a standard builder or by hand. The evidence is consistent with hand assembly: one layer per platform, an empty history entry, and zero-epoch timestamps. This is an **inference**, not a proven fact.
 - **Consequence:** the `v0.1.0` image cannot be rebuilt bit-for-bit from this repository. Its binaries are reproducible from the recorded flags, and its layer contents are verified. Its build recipe is not. Do not describe the `v0.1.0` image as reproducible.
 
-## v0.1.1 local OCI packaging
+## v0.1.1 OCI packaging and publication
 
-This section describes the checked-in procedure and the local artifacts produced under it. The artifacts are local only. No registry, tag, or release action has been taken.
+This section describes the checked-in procedure, the publication steps, and the verified published state. Release publication for `v0.1.1` has been completed. The tag, GitHub release, and GHCR image are listed under "Published state" below.
 
 ### Checked-in files
 
@@ -114,15 +114,47 @@ Requirements: a Linux x86_64 host with `curl`, `tar`, `sha256sum`, and `python3`
      --revision b06dce63a2552d30d66ac4226b3ac957c28347fe
    ```
 
-### Local artifacts, 2026-10-24
+### Publication procedure (as executed for v0.1.1)
+
+The image was published from the local BuildKit archive, not rebuilt for publication. The steps are:
+
+1. **Pin ORAS.** Use ORAS `v1.3.5`, `linux/amd64` archive `oras_1.3.5_linux_amd64.tar.gz`, SHA-256 `f48a73ea6d026a862c3919fc773da9a8c86fc259c2c737d5baed3b8b9614ad22`. The hash matches the official `oras_1.3.5_checksums.txt` for that release (**verified**). Check the archive against that hash before extracting it.
+2. **Apply the outer ref-name adapter.** The BuildKit OCI exporter's outer `index.json` descriptor does not carry `org.opencontainers.image.ref.name`, which the registry copy needs for a tag. Make a temporary local OCI-layout copy of `dist/v0.1.1/radichat-v0.1.1.oci.tar`, and add that one annotation (the tag name `v0.1.1`) to the outer descriptor only. Do not change any blob. The nested multi-platform image index, its manifests, configs, and layers keep their digests. This is a descriptor annotation, not a rebuild, and the image content is unchanged.
+3. **Copy to GHCR with ORAS.** With a temporary ORAS registry-config file that authenticates to GHCR, run:
+
+   ```sh
+   oras cp --no-tty --from-oci-layout --to-registry-config "$auth_file" \
+     /path/to/adapted-layout:v0.1.1 \
+     ghcr.io/radilabs/radichat:v0.1.1
+   ```
+
+   This is the command shape used for the publication. Keep the auth file outside the repository and remove it after use. Copy only to the `v0.1.1` tag. Do not push or retag `latest`.
+4. **Verify the registry copy.** The registry index digest must equal the nested index digest of the archive, `sha256:10e843853f975998159e6110aeb55c5b9e1ec5db8edfd2f9d1ad59a9fc112505`. Pull the image back as an OCI layout and run `scripts/verify_oci.py` against the accepted Linux binaries and the pinned CA bundle. The check must exit 0.
+
+Image execution was not tested. No OCI runtime was available, so the published image has structural, config, and payload verification only.
+
+### Published state
+
+Verified on 2026-10-24, after publication:
+
+- **Source tag:** annotated tag `v0.1.1` peels to `6645988e354076fede28070686b23667d0ff89ac`. `origin/main` is at the same commit.
+- **GitHub release:** `https://github.com/radilabs/radichat/releases/tag/v0.1.1`. Not a draft and not a prerelease. It has four binary assets and `SHA256SUMS`. The published `SHA256SUMS` is byte-identical to the local file. The four binaries are byte-identical to the local build, and their SHA-256 values match `SHA256SUMS`.
+- **GHCR tag `v0.1.1`:** OCI index digest `sha256:10e843853f975998159e6110aeb55c5b9e1ec5db8edfd2f9d1ad59a9fc112505`. This is the immutable digest, and it matches the local archive's nested index digest.
+- **Platform manifests:** `linux/amd64` `sha256:b7ac2e2b79ea8d0a6a10827700bbe7659d85a0e4c2918e482e514f2f81a1a8e3`; `linux/arm64` `sha256:807c9ef798bc83053e43253c4e177da6fd5885768ff23ad046ce3498ff46d9c1`.
+- **Registry-pulled contents:** `scripts/verify_oci.py` exits 0 on the pulled copy. It reports the embedded `linux/amd64` binary `e9c5250904b5a7497d1a26b8da23440ed8e944e9279cb7ef1f5ca356997ce9b5`, the embedded `linux/arm64` binary `cf7a80f83dade0655847ee7f491d7ddc3a4f58daf0a02c67b8d0e4a10e110490`, and the embedded CA bundle `796f1389bfea13c0ed78f663b765baaff54a508e5483786bd6ece73c5e3e3cbe`. The verification copy's SHA-256 is `793c59cf48071e9854b97cdd6cc76d6afc633256d2f819507e9e6b33b35799a2`. It is scratch evidence, not a release artifact.
+- **Image revision label:** `b06dce63a2552d30d66ac4226b3ac957c28347fe`, the source commit of the binaries. The tag commit `6645988` differs only in documentation and packaging files; no Go source or module file changed between the two.
+- **`latest` was not moved.** It still resolves to `sha256:2d8648b9f9d3c60273a7e432d0341a93e8e8fbcfe4c172617ddce3a07df98ecf`, the same digest as `v0.1.0`. `v0.1.0` is unchanged.
+- **Execution:** not tested. The published image has not been run in a container.
+
+### Local build record, 2026-10-24 (before publication)
 
 - **Verified:** the two archives are byte-identical. Both are 5,874,688 bytes with SHA-256 `38651f5a5dbd3d93b44cdb8c1353f63e0c7044af3fd6afb5bc65e209eb4ba493`.
 - **Verified:** `scripts/verify_oci.py` exits 0 on the archive, with these results:
-  - OCI index digest `sha256:10e843853f975998159e6110aeb55c5b9e1ec5db8edfd2f9d1ad59a9fc112505`. This is the digest of the local archive's multi-platform index. It is **not a registry digest** and has not been pushed.
+  - OCI index digest `sha256:10e843853f975998159e6110aeb55c5b9e1ec5db8edfd2f9d1ad59a9fc112505`. This is the digest of the local archive's multi-platform index. At the time of this pre-publication check it was **not a registry digest** and had not been pushed. That is historical; the same digest is now the published GHCR index digest (see "Published state" above).
   - amd64 manifest `sha256:b7ac2e2b79ea8d0a6a10827700bbe7659d85a0e4c2918e482e514f2f81a1a8e3`, two layers, binary SHA-256 `e9c5250904b5a7497d1a26b8da23440ed8e944e9279cb7ef1f5ca356997ce9b5`.
   - arm64 manifest `sha256:807c9ef798bc83053e43253c4e177da6fd5885768ff23ad046ce3498ff46d9c1`, two layers, binary SHA-256 `cf7a80f83dade0655847ee7f491d7ddc3a4f58daf0a02c67b8d0e4a10e110490`.
   - Both platforms carry the pinned CA bundle, the expected config, user `65532:65532`, working directory `/config`, entrypoint `/radichat`, and the default `CMD ["-config","/config/radichat.json"]`.
-- **Verified:** the `v0.1.1` tag does not exist on the registry (`GET …/manifests/v0.1.1` returns 404). `latest` and `v0.1.0` still resolve to `sha256:2d8648b9…98ecf`.
+- **Verified at the time of this pre-publication check:** the `v0.1.1` tag returned 404 from the registry (`GET …/manifests/v0.1.1`), and `latest` and `v0.1.0` resolved to `sha256:2d8648b9…98ecf`. These statements are historical. The `v0.1.1` tag now exists and resolves to the published digest; `latest` and `v0.1.0` are unchanged. See "Published state" above.
 - **Verified:** the `unittest` suite passes 7 of 7 when run from the repository root.
 - **Not verified:** runtime execution of the image or of its binaries in a container. No local OCI runtime is installed, so the image is verified only structurally and by its config and payload. The arm64 binary is not runtime-tested.
 
@@ -133,11 +165,14 @@ The build script produced `oci-verification.json`, `oci-archive.sha256`, and `oc
 - **Labels differ from v0.1.0.** The v0.1.1 image has only `version` and `revision` labels. The v0.1.0 image also carried title, description, source, URL, and license labels. The verifier checks only the first two. Restoring the labels changes the image config and therefore the digest, so it needs an Owner decision and a rebuild.
 - **Timestamp inputs:** the build passes `SOURCE_DATE_EPOCH=0` and enables the OCI exporter's `rewrite-timestamp=true`. Two fresh-root builds produced byte-identical archives, and the verifier checks every blob digest. The resulting reproducibility evidence covers the checked-in procedure on this host.
 - **The CA license is not stated in the bundle.** `container/CA-BUNDLE.md` says the bundle is "MPL-2.0 (same license as Mozilla's source certificate store)." The bundle file itself contains no license text. The MPL-2.0 statement is an external claim that was not verified in this session. Mozilla's root store and the curl.se page are the sources to check.
-- **Ignored release notes are older than this local build.** `dist/v0.1.1/BUILD_INFO.txt`, `PUBLICATION_PLAN.md`, and `RELEASE_NOTES.md` predate the local archive and still describe the earlier state. They are ignored by Git and are not public evidence; use this tracked document and the checked-in verifier when reviewing the local image.
-- **Runtime gap.** No container runtime has run the image. Runtime behavior of `linux/arm64` has not been tested on any host.
-- **No registry digest.** Any digest recorded before a push is local only. Once the image is pushed, record the registry digest and verify it against the archive's index digest.
-- **Watcher and Owner gates.** `tasks/release-oci-v0.1.1.md` has an empty execution record. Independent Watcher verification of the final archive and the repository changes has not been run, and no Owner acceptance has been given.
+- **Ignored release files.** `dist/v0.1.1/RELEASE_NOTES.md` was updated for the published state. `BUILD_INFO.txt` and `PUBLICATION_PLAN.md` still predate publication. They are ignored by Git and are not public evidence. Use this tracked document and the release record instead.
+- **Runtime gap.** No container runtime has run the published image. Runtime behavior of `linux/arm64` has not been tested on any host.
+- **Registry digest recorded.** The GHCR digest is in "Published state" above. Digests recorded before the push were local only.
+- **Gates and evidence.** The Owner authorized and performed the `v0.1.1` publication on 2026-10-24. The Watcher verification records are in `tasks/release-oci-v0.1.1.md` and in commit `6645988`. They cover packaging candidate `00b2c99c4a1f3b7619e961e778cecf540ad92ffa` and the follow-up candidate `be18552a999adcd94c0e0b691a630538efc67481`. This document does not restate those verdicts beyond what those records say.
+- **Kubernetes manifest.** `examples/kubernetes/job.json` uses the published immutable digest. Its test asserts the exact image reference. The example has not been run in a cluster.
 
 ## Publication
 
-Publication is a separate action that needs its own Owner authorization. The release procedure does not include any tag, release, or push step. After Owner authorization, push by tag, confirm the registry digest matches the archive's index digest, and do not change `latest` unless the Owner asks for it.
+The `v0.1.1` publication is complete. Its state is recorded under "Published state" above and in the [v0.1.1 release record](handoffs/release-v0.1.1.md).
+
+Any further tag, GitHub release, or image publication needs its own Owner authorization. Do not move `latest` unless the Owner asks for it. Verify any new registry digest against the archive's nested index digest before recording it.

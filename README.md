@@ -198,9 +198,9 @@ These boundaries are product choices for the current release state, not missing 
 
 ## Project status and release information
 
-Phases 0–6 are accepted. Phase 6 (v0.1.1 file prompts, `-input`, and JSONL `-output`) is accepted on `main`. No v0.1.1 tag, release, binary, or image has been published.
+Phases 0–6 are accepted. Phase 6 (v0.1.1 file prompts, `-input`, and JSONL `-output`) is accepted on `main`, and it is published as release `v0.1.1`: [GitHub release](https://github.com/radilabs/radichat/releases/tag/v0.1.1), tag at commit `6645988e354076fede28070686b23667d0ff89ac`, and the GHCR image `ghcr.io/radilabs/radichat:v0.1.1` at `sha256:10e843853f975998159e6110aeb55c5b9e1ec5db8edfd2f9d1ad59a9fc112505`. The image has not been run in a container. `latest` was not moved and still resolves to `v0.1.0`.
 
-Current release: [`v0.1.0`](https://github.com/radilabs/radichat/releases/tag/v0.1.0), the initial public source release for the accepted local-chat and endpoint-authentication feature set. The repository does not yet define a broader versioning policy.
+Current release: [`v0.1.1`](https://github.com/radilabs/radichat/releases/tag/v0.1.1), file prompts, sequential `-input`, and JSONL `-output`. Previous release: [`v0.1.0`](https://github.com/radilabs/radichat/releases/tag/v0.1.0), the initial public source release for the accepted local-chat and endpoint-authentication feature set. The repository does not yet define a broader versioning policy.
 
 High-level roadmap:
 
@@ -208,7 +208,7 @@ High-level roadmap:
 - Phase 1 — unauthenticated local chat core: accepted.
 - Phase 2 — optional bearer authentication: accepted.
 - Phases 3–5 — Factory v1.2 migration, `radichat-mock` test tooling, and the adversarial protocol investigation: accepted.
-- Phase 6 — v0.1.1 file prompts, `-input`, and JSONL `-output`: accepted, not released. The Kubernetes example is documentation only and uses the placeholder digest `REPLACE_WITH_V0_1_1_DIGEST`.
+- Phase 6 — v0.1.1 file prompts, `-input`, and JSONL `-output`: accepted and released as `v0.1.1`. The Kubernetes example uses the published image digest; it is documentation and an example only, and has not been run in a cluster.
 
 ## Documentation
 

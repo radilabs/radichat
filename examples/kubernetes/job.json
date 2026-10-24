@@ -30,7 +30,7 @@
         "containers": [
           {
             "name": "radichat",
-            "image": "ghcr.io/radilabs/radichat@sha256:REPLACE_WITH_V0_1_1_DIGEST",
+            "image": "ghcr.io/radilabs/radichat@sha256:10e843853f975998159e6110aeb55c5b9e1ec5db8edfd2f9d1ad59a9fc112505",
             "args": [
               "-config",
               "/config/radichat.json",
