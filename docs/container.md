@@ -64,17 +64,24 @@ The paragraphs above describe the published `v0.1.0` image. Aside from the empty
 
 ## v0.1.1 published image
 
-The `v0.1.1` image is published at `ghcr.io/radilabs/radichat`. The full release record is [v0.1.1 release record](handoffs/release-v0.1.1.md).
+The `v0.1.1` image is published at GHCR and Docker Hub. The full release record is [v0.1.1 release record](handoffs/release-v0.1.1.md).
 
-- **Tag:** `ghcr.io/radilabs/radichat:v0.1.1`
-- **Immutable digest (OCI index):** `ghcr.io/radilabs/radichat@sha256:10e843853f975998159e6110aeb55c5b9e1ec5db8edfd2f9d1ad59a9fc112505`
+- **Tags:** `ghcr.io/radilabs/radichat:v0.1.1`; `docker.io/naorw/radichat:v0.1.1`
+- **Immutable digest (OCI index):** `sha256:10e843853f975998159e6110aeb55c5b9e1ec5db8edfd2f9d1ad59a9fc112505` (same in both registries)
 - **Platform manifests:** `linux/amd64` `sha256:b7ac2e2b79ea8d0a6a10827700bbe7659d85a0e4c2918e482e514f2f81a1a8e3`; `linux/arm64` `sha256:807c9ef798bc83053e43253c4e177da6fd5885768ff23ad046ce3498ff46d9c1`
 - **Embedded binaries** (verified against the registry-pulled payloads): `linux/amd64` `e9c5250904b5a7497d1a26b8da23440ed8e944e9279cb7ef1f5ca356997ce9b5`; `linux/arm64` `cf7a80f83dade0655847ee7f491d7ddc3a4f58daf0a02c67b8d0e4a10e110490`
 - **Embedded CA bundle:** `796f1389bfea13c0ed78f663b765baaff54a508e5483786bd6ece73c5e3e3cbe`
 - **Image revision label:** `b06dce63a2552d30d66ac4226b3ac957c28347fe`, the source commit of the binaries. The release tag commit `6645988e354076fede28070686b23667d0ff89ac` differs only in documentation and packaging files, and the binaries are the same.
 
+Pull either registry's tag with:
+
+```bash
+docker pull ghcr.io/radilabs/radichat:v0.1.1
+docker pull docker.io/naorw/radichat:v0.1.1
+```
+
 The image has the same non-root user (`65532:65532`), working directory (`/config`), entrypoint (`/radichat`), and default `CMD ["-config","/config/radichat.json"]` as `v0.1.0`. It has only `version` and `revision` labels; the title, description, source, URL, and license labels from `v0.1.0` are not present.
 
-**Verification scope:** the registry-pulled OCI contents passed `scripts/verify_oci.py`, which checks the platform set, descriptor and blob digests, the image config, each layer's paths, modes, and ownership, and the binary and CA hashes. The image has **not been executed**. No OCI runtime was available, so this is structural, config, and payload verification only.
+**Verification scope:** the registry-pulled OCI contents from GHCR and Docker Hub passed `scripts/verify_oci.py`, which checks the platform set, descriptor and blob digests, the image config, each layer's paths, modes, and ownership, and the binary and CA hashes. The image has **not been executed**. No OCI runtime was available, so this is structural, config, and payload verification only.
 
-`latest` was **not** moved. It still resolves to the `v0.1.0` digest `sha256:2d8648b9f9d3c60273a7e432d0341a93e8e8fbcfe4c172617ddce3a07df98ecf`, and `v0.1.0` is unchanged. Use `v0.1.1` explicitly.
+GHCR `latest` was **not** moved. It still resolves to the `v0.1.0` digest `sha256:2d8648b9f9d3c60273a7e432d0341a93e8e8fbcfe4c172617ddce3a07df98ecf`, and `v0.1.0` is unchanged. No Docker Hub `latest` tag was published. Use `v0.1.1` explicitly.

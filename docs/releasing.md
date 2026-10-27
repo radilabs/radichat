@@ -1,6 +1,6 @@
 # Releasing RadiChat
 
-This document records four things: the evidence for the published `v0.1.0` binaries and container image, the checked-in OCI packaging procedure for `v0.1.1`, the publication of `v0.1.1` (tag, GitHub release, and GHCR image), and the open items. The durable release record is [v0.1.1 release record](handoffs/release-v0.1.1.md). Any further tag, release, or image publication requires separate Owner authorization. `v0.1.0` and `latest` are not changed by this document.
+This document records four things: the evidence for the published `v0.1.0` binaries and container image, the checked-in OCI packaging procedure for `v0.1.1`, the publication of `v0.1.1` (tag, GitHub release, and GHCR and Docker Hub images), and the open items. The durable release record is [v0.1.1 release record](handoffs/release-v0.1.1.md). Any further tag, release, or image publication requires separate Owner authorization. `v0.1.0` and `latest` are not changed by this document.
 
 Each statement is marked as **verified** (checked against a named source in this repository or a read-only registry or GitHub fetch), **reported** (taken from a source this repository does not contain), or **unknown**.
 
@@ -133,14 +133,30 @@ The image was published from the local BuildKit archive, not rebuilt for publica
 
 Image execution was not tested. No OCI runtime was available, so the published image has structural, config, and payload verification only.
 
+### Docker Hub publication (2026-10-27)
+
+Owner authorization was granted to publish the existing verified OCI archive to Docker Hub. No image rebuild was performed. Skopeo `1.24.0` copied the archive with `--all --preserve-digests`:
+
+```sh
+skopeo copy --all --preserve-digests \
+  oci-archive:dist/v0.1.1/radichat-v0.1.1.oci.tar \
+  docker://docker.io/naorw/radichat:v0.1.1
+```
+
+Skopeo used the configured Docker Hub authentication. Keep credentials in Skopeo's credential store or an external auth file; do not place them in the repository or command history. Only the `v0.1.1` tag was targeted.
+
+The registry copy was fetched back as an OCI archive with Skopeo and checked with `scripts/verify_oci.py`. The registry index digest remained `sha256:10e843853f975998159e6110aeb55c5b9e1ec5db8edfd2f9d1ad59a9fc112505`, matching the accepted archive and GHCR. The amd64 and arm64 platform manifests, image configs, layers, binary hashes, and CA bundle hash all matched. The pulled-back tar archive has its own transport archive hash; that is not the registry digest.
+
 ### Published state
 
-Verified on 2026-10-24, after publication:
+Verified on 2026-10-24 after the GitHub and GHCR publication. Docker Hub publication and verification were added on 2026-10-27:
 
 - **Source tag:** annotated tag `v0.1.1` peels to `6645988e354076fede28070686b23667d0ff89ac`. `origin/main` is at the same commit.
 - **GitHub release:** `https://github.com/radilabs/radichat/releases/tag/v0.1.1`. Not a draft and not a prerelease. It has four binary assets and `SHA256SUMS`. The published `SHA256SUMS` is byte-identical to the local file. The four binaries are byte-identical to the local build, and their SHA-256 values match `SHA256SUMS`.
 - **GHCR tag `v0.1.1`:** OCI index digest `sha256:10e843853f975998159e6110aeb55c5b9e1ec5db8edfd2f9d1ad59a9fc112505`. This is the immutable digest, and it matches the local archive's nested index digest.
+- **Docker Hub tag `v0.1.1`:** `docker.io/naorw/radichat:v0.1.1`, OCI index digest `sha256:10e843853f975998159e6110aeb55c5b9e1ec5db8edfd2f9d1ad59a9fc112505`. Published with Skopeo `1.24.0` from the existing verified archive using `--all --preserve-digests`; no rebuild was performed.
 - **Platform manifests:** `linux/amd64` `sha256:b7ac2e2b79ea8d0a6a10827700bbe7659d85a0e4c2918e482e514f2f81a1a8e3`; `linux/arm64` `sha256:807c9ef798bc83053e43253c4e177da6fd5885768ff23ad046ce3498ff46d9c1`.
+- **Docker Hub pull-back verification:** `skopeo copy --all --preserve-digests docker://docker.io/naorw/radichat:v0.1.1 oci-archive:/tmp/radichat-dockerhub-v0.1.1.oci.tar:v0.1.1`, followed by the `scripts/verify_oci.py` check against the released Linux binaries and pinned CA bundle, exited 0. The copied archive contained exactly `linux/amd64` and `linux/arm64` and reported binary hashes `e9c5250904b5a7497d1a26b8da23440ed8e944e9279cb7ef1f5ca356997ce9b5` and `cf7a80f83dade0655847ee7f491d7ddc3a4f58daf0a02c67b8d0e4a10e110490`, respectively.
 - **Registry-pulled contents:** `scripts/verify_oci.py` exits 0 on the pulled copy. It reports the embedded `linux/amd64` binary `e9c5250904b5a7497d1a26b8da23440ed8e944e9279cb7ef1f5ca356997ce9b5`, the embedded `linux/arm64` binary `cf7a80f83dade0655847ee7f491d7ddc3a4f58daf0a02c67b8d0e4a10e110490`, and the embedded CA bundle `796f1389bfea13c0ed78f663b765baaff54a508e5483786bd6ece73c5e3e3cbe`. The verification copy's SHA-256 is `793c59cf48071e9854b97cdd6cc76d6afc633256d2f819507e9e6b33b35799a2`. It is scratch evidence, not a release artifact.
 - **Image revision label:** `b06dce63a2552d30d66ac4226b3ac957c28347fe`, the source commit of the binaries. The tag commit `6645988` differs only in documentation and packaging files; no Go source or module file changed between the two.
 - **`latest` was not moved.** It still resolves to `sha256:2d8648b9f9d3c60273a7e432d0341a93e8e8fbcfe4c172617ddce3a07df98ecf`, the same digest as `v0.1.0`. `v0.1.0` is unchanged.

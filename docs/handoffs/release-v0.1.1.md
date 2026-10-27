@@ -34,7 +34,9 @@ The macOS binaries are unsigned and not notarized. No macOS runtime support is c
 ## Container image
 
 - **Tag:** `ghcr.io/radilabs/radichat:v0.1.1`
+- **Docker Hub tag:** `docker.io/naorw/radichat:v0.1.1` (published 2026-10-27 from the existing archive; no rebuild)
 - **Immutable digest (OCI index):** `sha256:10e843853f975998159e6110aeb55c5b9e1ec5db8edfd2f9d1ad59a9fc112505`. This is the registry digest. It matches the nested index digest of the local BuildKit archive.
+- **Docker Hub index digest:** `sha256:10e843853f975998159e6110aeb55c5b9e1ec5db8edfd2f9d1ad59a9fc112505`, matching the local archive and GHCR index.
 - **Platform manifests:** `linux/amd64` `sha256:b7ac2e2b79ea8d0a6a10827700bbe7659d85a0e4c2918e482e514f2f81a1a8e3`; `linux/arm64` `sha256:807c9ef798bc83053e43253c4e177da6fd5885768ff23ad046ce3498ff46d9c1`.
 - **Embedded binaries:** `linux/amd64` `e9c5250904b5a7497d1a26b8da23440ed8e944e9279cb7ef1f5ca356997ce9b5`; `linux/arm64` `cf7a80f83dade0655847ee7f491d7ddc3a4f58daf0a02c67b8d0e4a10e110490`.
 - **Embedded CA bundle:** `796f1389bfea13c0ed78f663b765baaff54a508e5483786bd6ece73c5e3e3cbe` (curl.se Mozilla snapshot, 118 certificates, 200,116 bytes).
@@ -59,11 +61,22 @@ Publication used ORAS `v1.3.5`:
 - The BuildKit OCI archive's outer `index.json` descriptor lacked `org.opencontainers.image.ref.name`, which the registry copy needs for a tag. A temporary local OCI-layout copy was made. Only that one outer descriptor annotation was added. No blob changed, so the nested multi-platform index and its digest are preserved. This was an annotation adapter, not a rebuild.
 - The adapted layout was copied to `ghcr.io/radilabs/radichat:v0.1.1`. The exact ORAS invocation was not captured in the repository; its transcript is the authority for the flags used.
 
+Docker Hub publication used Skopeo `1.24.0` directly from the accepted OCI archive, without rebuilding:
+
+```sh
+skopeo copy --all --preserve-digests \
+  oci-archive:dist/v0.1.1/radichat-v0.1.1.oci.tar \
+  docker://docker.io/naorw/radichat:v0.1.1
+```
+
+The copy used configured Skopeo credentials. `--all` retained both platforms, and `--preserve-digests` required the copied content to keep its digests. Only the `v0.1.1` tag was published; no Docker Hub `latest` tag was targeted.
+
 ## Verification
 
 - **Published assets:** the downloaded assets match `SHA256SUMS`, and the published `SHA256SUMS` is byte-identical to the local file.
 - **Registry:** `v0.1.1` resolves to the index digest above. The platform manifests match the values listed.
 - **Registry-pulled copy:** `scripts/verify_oci.py` exits 0 against the accepted Linux binaries and the pinned CA bundle. The verification copy's SHA-256 is `793c59cf48071e9854b97cdd6cc76d6afc633256d2f819507e9e6b33b35799a2`. It is scratch evidence, not a release artifact.
+- **Docker Hub registry:** `skopeo inspect --raw docker://docker.io/naorw/radichat:v0.1.1` returned OCI index digest `sha256:10e843853f975998159e6110aeb55c5b9e1ec5db8edfd2f9d1ad59a9fc112505`. Pull-back to an OCI archive followed by `scripts/verify_oci.py` passed. The platform manifest digests match GHCR: amd64 `sha256:b7ac2e2b79ea8d0a6a10827700bbe7659d85a0e4c2918e482e514f2f81a1a8e3`, arm64 `sha256:807c9ef798bc83053e43253c4e177da6fd5885768ff23ad046ce3498ff46d9c1`. Embedded binary SHA-256 values match the accepted release binaries: amd64 `e9c5250904b5a7497d1a26b8da23440ed8e944e9279cb7ef1f5ca356997ce9b5`, arm64 `cf7a80f83dade0655847ee7f491d7ddc3a4f58daf0a02c67b8d0e4a10e110490`.
 - **Tests:** `python3 -m unittest scripts.test_verify_oci -v` passes 7 of 7 from the repository root.
 - **Independent review:** the Watcher record in commit `6645988` (`tasks/release-oci-v0.1.1.md`) covers the packaging candidate `00b2c99c4a1f3b7619e961e778cecf540ad92ffa` and the follow-up candidate `be18552a999adcd94c0e0b691a630538efc67481`. This record does not restate those verdicts beyond what that record says.
 

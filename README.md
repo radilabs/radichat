@@ -1,6 +1,6 @@
 # RadiChat
 
-**A small Linux terminal client for local and remote OpenAI-compatible chat endpoints.**
+**A small terminal client for local and remote OpenAI-compatible chat endpoints. Linux/amd64 is the only runtime-tested platform.**
 
 RadiChat is for people who want streamed, multi-turn chat without an agent framework, database, browser UI, or background service. It is designed around local models and small context windows, while retaining an optional bearer-authenticated path for compatible remote endpoints.
 
@@ -28,7 +28,7 @@ It is intentionally not an agent runtime, automation harness, model server, or f
 
 ## Install a prebuilt binary
 
-The [`v0.1.0` release](https://github.com/radilabs/radichat/releases/tag/v0.1.0) provides binaries for Linux and macOS on amd64 and arm64. Download the matching artifact and verify it against `SHA256SUMS` from the same release before running it. The macOS binaries are cross-compiled release artifacts. They are unsigned, not notarized, and not runtime-tested by this project. macOS runtime support is not claimed.
+The current release is [`v0.1.1`](https://github.com/radilabs/radichat/releases/tag/v0.1.1). It provides binaries for Linux and macOS on amd64 and arm64. Download the matching artifact and verify it against `SHA256SUMS` from the same release before running it. The macOS binaries are cross-compiled release artifacts. They are unsigned, not notarized, and not runtime-tested by this project. macOS runtime support is not claimed. The previous release, [`v0.1.0`](https://github.com/radilabs/radichat/releases/tag/v0.1.0), remains available unchanged.
 
 ## Install from source
 
@@ -40,7 +40,7 @@ cd radichat
 go build -o radichat .
 ```
 
-The build produces one executable in the repository root. The accepted checkpoint is tested on Linux/amd64 with Go 1.27.1 and has no third-party module dependencies.
+The build produces one executable in the repository root. Release `v0.1.1` binaries were built with Go 1.27.1 and native-smoke-tested on Linux/amd64. The module has no third-party dependencies.
 
 Run the project checks with:
 
@@ -80,18 +80,26 @@ No token is needed. `radichat.local.json` and the default `radichat.json` are ig
 
 ## Run in a container
 
-The public image supports `linux/amd64` and `linux/arm64`. Pull the versioned image:
+The public image supports `linux/amd64` and `linux/arm64`. Pull the current versioned image:
 
 ```bash
-docker pull ghcr.io/radilabs/radichat:v0.1.0
+docker pull ghcr.io/radilabs/radichat:v0.1.1
 ```
+
+The same multi-platform `v0.1.1` image is also published on Docker Hub as [`docker.io/naorw/radichat:v0.1.1`](https://hub.docker.com/r/naorw/radichat). Both registries resolve to the same immutable image digest. No `latest` tag was published to Docker Hub.
+
+```bash
+docker pull docker.io/naorw/radichat:v0.1.1
+```
+
+The `v0.1.0` image predates the file-prompt and batch features (`system_prompt_file`, `-input`, and `-output`). Configurations that use them fail against it. `latest` on GHCR still points at `v0.1.0`, so use `v0.1.1` explicitly.
 
 For a model server listening on the Linux host at `127.0.0.1`, mount the local config read-only and use host networking:
 
 ```bash
 docker run --rm -it --network host \
   -v "$PWD/radichat.local.json:/config/radichat.json:ro" \
-  ghcr.io/radilabs/radichat:v0.1.0
+  ghcr.io/radilabs/radichat:v0.1.1
 ```
 
 For an authenticated remote endpoint, forward the already-exported variable by name. Its value does not appear in the command:
@@ -100,10 +108,10 @@ For an authenticated remote endpoint, forward the already-exported variable by n
 docker run --rm -it \
   -v "$PWD/radichat.local.json:/config/radichat.json:ro" \
   -e RADICHAT_BEARER_TOKEN \
-  ghcr.io/radilabs/radichat:v0.1.0
+  ghcr.io/radilabs/radichat:v0.1.1
 ```
 
-The image runs as non-root and contains the static RadiChat binary plus the CA certificates needed for strict HTTPS verification. See [Container image](docs/container.md) for image digests, networking details, and verification scope.
+The image is configured to run as non-root (UID/GID `65532:65532`) and contains the static RadiChat binary plus the CA certificates needed for strict HTTPS verification. The image has not been executed in a container. See [Container image](docs/container.md) for image digests, networking details, and verification scope.
 
 ## Authenticated endpoint
 
@@ -186,6 +194,8 @@ Bearer tokens live in process memory after startup. The authenticated path omits
 ## Limitations and non-goals
 
 - Linux is the only platform the project runtime-tests. Other release artifacts are cross-compiled and carry no runtime support claim.
+- Batch input is sequential: one request at a time, with no concurrency and no retries. JSONL results are per run and are not reloaded. See [Batch input and JSONL results](docs/batch.md).
+- SIGINT and SIGTERM cannot interrupt a process that is blocked opening a FIFO for `-input`. Exit 130 or 143 occurs only after a writer opens the FIFO. Use a regular file when prompt signal exit is required.
 - The client supports a narrow streaming Chat Completions subset, not every provider extension.
 - Context accounting uses deterministic UTF-8 byte-based units, not a model tokenizer.
 - There is no endpoint discovery, hidden fallback, automatic retry, or non-streaming fallback.
